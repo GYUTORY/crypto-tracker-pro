@@ -23,12 +23,11 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
-    "@nestjs/websockets": "^10.0.0",
-    "@nestjs/platform-socket.io": "^10.0.0",
+    "@types/ws": "^8.18.1",
+    "axios": "^1.6.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "ws": "^8.14.2",
-    "axios": "^1.6.0"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -70,4 +69,4 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
-} 
+}
