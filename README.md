@@ -10,6 +10,7 @@
 - **REST API**: HTTP를 통한 가격 데이터 제공
 - **폴백 시스템**: 메모리에 없으면 바이낸스 API 호출
 - **통일된 응답 형식**: 모든 API가 BaseResponse 형태로 응답
+- **Swagger API 문서화**: 완전한 API 문서 및 테스트 인터페이스
 
 ## 기술 스택
 
@@ -18,6 +19,7 @@
 - **TypeScript**: 5.x
 - **WebSocket**: ws 라이브러리
 - **HTTP Client**: axios
+- **API 문서화**: Swagger/OpenAPI
 
 ## 설치 및 실행
 
@@ -42,18 +44,51 @@ npm run build
 npm run start:prod
 ```
 
+## API 문서 (Swagger)
+
+### Swagger UI 접속
+서버 실행 후 다음 URL에서 API 문서를 확인할 수 있습니다:
+
+- **개발 환경**: http://localhost:3000/api-docs
+- **프로덕션 환경**: https://your-domain.com/api-docs
+
+### API 문서 특징
+- **완전한 API 스키마**: 모든 엔드포인트의 요청/응답 형식 정의
+- **실시간 테스트**: 브라우저에서 직접 API 호출 테스트 가능
+- **상세한 설명**: 각 API의 기능, 파라미터, 응답 예시 제공
+- **응답 코드**: 성공/실패 케이스별 응답 예시
+- **인터랙티브 UI**: 직관적인 사용자 인터페이스
+
+### API 태그별 분류
+1. **health**: 헬스체크 및 기본 정보
+   - `GET /` - 환영 메시지
+   - `GET /health` - 헬스체크
+
+2. **binance**: 바이낸스 가격 데이터 API
+   - `GET /binance/price/:symbol` - 특정 암호화폐 현재 가격
+
+3. **tcp**: WebSocket 연결 상태 및 메모리 데이터
+   - `GET /tcp/status` - WebSocket 연결 상태 및 메모리 정보
+   - `GET /tcp/prices` - 메모리 저장된 모든 가격 데이터
+   - `GET /tcp/reconnect` - WebSocket 재연결 시도
+
 ## 프로젝트 구조
 
 ```
 src/
-├── main.ts                 # 애플리케이션 진입점
+├── main.ts                 # 애플리케이션 진입점 (Swagger 설정 포함)
 ├── app.module.ts          # 루트 모듈
-├── app.controller.ts      # 기본 컨트롤러
+├── app.controller.ts      # 기본 컨트롤러 (헬스체크)
 ├── app.service.ts         # 기본 서비스
+├── dto/                   # Data Transfer Objects (Swagger 스키마)
+│   ├── base-response.dto.ts    # 공통 응답 DTO
+│   ├── price.dto.ts            # 가격 데이터 DTO
+│   └── health.dto.ts           # 헬스체크 DTO
 ├── services/              # 공통 서비스
 │   └── base.service.ts    # BaseService (모든 서비스의 기본 클래스)
 ├── tcp/                   # WebSocket 연결 관련 모듈
 │   ├── tcp.module.ts      # TCP 모듈
+│   ├── tcp.controller.ts  # TCP 컨트롤러 (WebSocket 상태 관리)
 │   ├── tcp.service.ts     # 바이낸스 WebSocket 연결 서비스
 │   └── price-store.service.ts # 메모리 기반 가격 저장소
 └── binance/               # 바이낸스 가격 데이터 모듈
@@ -79,14 +114,14 @@ src/
   "result_data": {
     // 실제 데이터
   },
-  "httpStatus": 200
+  "code": "S001"
 }
 ```
 
 - `result`: 요청 성공 여부 (true/false)
 - `msg`: 응답 메시지
 - `result_data`: 실제 데이터
-- `httpStatus`: HTTP 상태 코드
+- `code`: 응답 코드 (S001: 성공, E001: 일반 오류, E400: 잘못된 요청, E500: 서버 오류)
 
 ## API 엔드포인트
 
@@ -97,6 +132,7 @@ src/
 ### 바이낸스 WebSocket 연결 상태
 - `GET /tcp/status` - 바이낸스 WebSocket 연결 상태 및 메모리 정보
 - `GET /tcp/prices` - 메모리에 저장된 모든 가격 데이터
+- `GET /tcp/reconnect` - WebSocket 재연결 시도
 
 ### 바이낸스 가격 데이터
 - `GET /binance/price/:symbol` - 특정 암호화폐 현재 가격
@@ -118,10 +154,10 @@ src/
 
 ```typescript
 // 성공 응답 생성
-this.createSuccessResponse(data, message, httpStatus);
+this.createSuccessResponse(data, message, code);
 
 // 실패 응답 생성
-this.createErrorResponse(message, httpStatus, data);
+this.createErrorResponse(message, code, data);
 
 // 데이터 없음 응답 생성
 this.createNoDataResponse(message);
@@ -148,10 +184,18 @@ BINANCE_API_URL=https://api.binance.com/api/v3
 - **린팅**: `npm run lint`
 - **테스트**: `npm run test`
 - **테스트 커버리지**: `npm run test:cov`
+- **API 문서**: http://localhost:3000/api-docs
 
 ## 사용 예시
 
-### 1. API로 가격 데이터 조회
+### 1. Swagger UI를 통한 API 테스트
+1. 브라우저에서 http://localhost:3000/api-docs 접속
+2. 원하는 API 엔드포인트 선택
+3. "Try it out" 버튼 클릭
+4. 파라미터 입력 후 "Execute" 버튼 클릭
+5. 실시간으로 API 응답 확인
+
+### 2. API로 가격 데이터 조회
 ```bash
 curl http://localhost:3000/binance/price/BTCUSDT
 ```
@@ -165,21 +209,21 @@ curl http://localhost:3000/binance/price/BTCUSDT
     "symbol": "BTCUSDT",
     "price": "43250.50"
   },
-  "httpStatus": 200
+  "code": "S001"
 }
 ```
 
-### 2. 바이낸스 WebSocket 연결 상태 확인
+### 3. 바이낸스 WebSocket 연결 상태 확인
 ```bash
 curl http://localhost:3000/tcp/status
 ```
 
-### 3. 메모리 데이터 조회
+### 4. 메모리 데이터 조회
 ```bash
 curl http://localhost:3000/tcp/prices
 ```
 
-### 4. 전체 API 테스트
+### 5. 전체 API 테스트
 ```bash
 chmod +x api-test.sh
 ./api-test.sh
@@ -207,6 +251,28 @@ chmod +x api-test.sh
   "result": false,
   "msg": "Error message",
   "result_data": null,
-  "httpStatus": 400
+  "code": "E400"
 }
-``` 
+```
+
+## Swagger 문서화 특징
+
+### 완전한 API 스키마
+- 모든 엔드포인트의 요청/응답 형식 정의
+- DTO 클래스를 통한 타입 안전성 보장
+- 실제 응답 예시 제공
+
+### 개발자 친화적 인터페이스
+- 직관적인 UI로 API 탐색 가능
+- 실시간 API 테스트 기능
+- 응답 코드별 예시 제공
+
+### 상세한 문서화
+- 각 API의 기능과 사용법 설명
+- 파라미터별 상세 설명
+- 성공/실패 케이스별 응답 예시
+
+### 자동 생성
+- 코드 변경 시 자동으로 문서 업데이트
+- TypeScript 타입 정보를 활용한 스키마 생성
+- 일관된 문서 형식 유지 
