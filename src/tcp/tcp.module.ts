@@ -5,6 +5,7 @@
  * 메모리에 저장하고 관리하는 역할을 합니다.
  * 
  * 모듈 구성:
+ * - TcpController: WebSocket 연결 상태 및 메모리 데이터 HTTP 엔드포인트
  * - TcpService: TCP 서버 및 데이터 관리
  * - PriceStoreService: 메모리 기반 가격 저장소
  * 
@@ -13,6 +14,7 @@
  * - 실시간 비트코인 가격 데이터 수신
  * - 메모리 기반 가격 데이터 저장
  * - API 요청 시 메모리 데이터 반환
+ * - WebSocket 연결 상태 모니터링
  * 
  * TCP 통신 특징:
  * - 실시간 데이터 스트리밍
@@ -21,10 +23,14 @@
  * - 에러 처리 및 재연결
  */
 import { Module } from '@nestjs/common';
+import { TcpController } from './tcp.controller';
 import { TcpService } from './tcp.service';
 import { PriceStoreService } from './price-store.service';
 
 @Module({
+  // WebSocket 연결 상태 및 메모리 데이터 HTTP 요청을 처리하는 컨트롤러
+  controllers: [TcpController],
+  
   // TCP 서버 및 데이터 관리를 담당하는 서비스들
   providers: [TcpService, PriceStoreService],
   
