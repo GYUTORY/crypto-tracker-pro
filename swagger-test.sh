@@ -6,7 +6,7 @@
 BASE_URL="http://localhost:3000"
 SWAGGER_URL="$BASE_URL/api-docs"
 
-echo "🚀 Crypto Tracker Pro Swagger API 테스트 시작"
+echo "Crypto Tracker Pro Swagger API 테스트 시작"
 echo "=============================================="
 
 # 색상 정의
@@ -21,7 +21,7 @@ test_swagger_endpoint() {
     local endpoint=$1
     local description=$2
     
-    echo -e "\n${BLUE}📡 테스트: $description${NC}"
+    echo -e "\n${BLUE}테스트: $description${NC}"
     echo "엔드포인트: $endpoint"
     echo "----------------------------------------"
     
@@ -36,9 +36,9 @@ test_swagger_endpoint() {
         
         # Swagger UI인지 확인
         if echo "$response_body" | grep -q "swagger-ui"; then
-            echo -e "${GREEN}✅ Swagger UI가 정상적으로 로드됨${NC}"
+            echo -e "${GREEN}Swagger UI가 정상적으로 로드됨${NC}"
         else
-            echo -e "${YELLOW}⚠️  Swagger UI가 아닌 응답${NC}"
+            echo -e "${YELLOW}Swagger UI가 아닌 응답${NC}"
         fi
     else
         echo -e "${RED}❌ 실패 (HTTP $http_status)${NC}"
@@ -54,7 +54,7 @@ test_swagger_endpoint "$SWAGGER_URL" "Swagger UI 접근"
 test_swagger_endpoint "$BASE_URL/api-docs-json" "OpenAPI JSON 스키마"
 
 # 3. 기본 API 엔드포인트 테스트
-echo -e "${YELLOW}🔍 기본 API 엔드포인트 테스트${NC}"
+echo -e "${YELLOW}기본 API 엔드포인트 테스트${NC}"
 echo "=================================="
 
 # 헬스체크
@@ -62,9 +62,9 @@ health_response=$(curl -s "$BASE_URL/health")
 if command -v jq &> /dev/null; then
     health_result=$(echo "$health_response" | jq -r '.result // "unknown"')
     if [ "$health_result" = "true" ]; then
-        echo -e "${GREEN}✅ 헬스체크 성공${NC}"
+        echo -e "${GREEN}헬스체크 성공${NC}"
     else
-        echo -e "${RED}❌ 헬스체크 실패${NC}"
+        echo -e "${RED}헬스체크 실패${NC}"
     fi
 else
     echo "헬스체크 응답: $health_response"
@@ -75,9 +75,9 @@ tcp_response=$(curl -s "$BASE_URL/tcp/status")
 if command -v jq &> /dev/null; then
     tcp_result=$(echo "$tcp_response" | jq -r '.result // "unknown"')
     if [ "$tcp_result" = "true" ]; then
-        echo -e "${GREEN}✅ TCP 상태 조회 성공${NC}"
+        echo -e "${GREEN}TCP 상태 조회 성공${NC}"
     else
-        echo -e "${RED}❌ TCP 상태 조회 실패${NC}"
+        echo -e "${RED}TCP 상태 조회 실패${NC}"
     fi
 else
     echo "TCP 상태 응답: $tcp_response"
@@ -88,16 +88,16 @@ binance_response=$(curl -s "$BASE_URL/binance/price/BTCUSDT")
 if command -v jq &> /dev/null; then
     binance_result=$(echo "$binance_response" | jq -r '.result // "unknown"')
     if [ "$binance_result" = "true" ]; then
-        echo -e "${GREEN}✅ 바이낸스 가격 조회 성공${NC}"
+        echo -e "${GREEN}바이낸스 가격 조회 성공${NC}"
     else
-        echo -e "${RED}❌ 바이낸스 가격 조회 실패${NC}"
+        echo -e "${RED}바이낸스 가격 조회 실패${NC}"
     fi
 else
     echo "바이낸스 가격 응답: $binance_response"
 fi
 
 # 4. Swagger 문서 접근 방법 안내
-echo -e "\n${YELLOW}📚 Swagger 문서 접근 방법${NC}"
+echo -e "\n${YELLOW}Swagger 문서 접근 방법${NC}"
 echo "=================================="
 echo -e "${BLUE}1. 브라우저에서 다음 URL 접속:${NC}"
 echo "   $SWAGGER_URL"
@@ -116,7 +116,7 @@ echo "   - tcp: WebSocket 연결 상태 및 메모리 데이터"
 echo ""
 
 # 5. 응답 형식 검증
-echo -e "${YELLOW}🔍 응답 형식 검증${NC}"
+echo -e "${YELLOW}응답 형식 검증${NC}"
 echo "=================================="
 
 if command -v jq &> /dev/null; then
@@ -135,15 +135,15 @@ if command -v jq &> /dev/null; then
     echo "  - code: $has_code"
     
     if [ "$has_result" = "true" ] && [ "$has_msg" = "true" ] && [ "$has_result_data" = "true" ] && [ "$has_code" = "true" ]; then
-        echo -e "${GREEN}✅ BaseResponse 구조가 올바릅니다!${NC}"
+        echo -e "${GREEN}BaseResponse 구조가 올바릅니다!${NC}"
     else
-        echo -e "${RED}❌ BaseResponse 구조에 문제가 있습니다.${NC}"
+        echo -e "${RED}BaseResponse 구조에 문제가 있습니다.${NC}"
     fi
 else
     echo "jq가 설치되어 있지 않아 구조 검증을 건너뜁니다."
 fi
 
-echo -e "\n${GREEN}🎉 Swagger API 테스트 완료!${NC}"
+echo -e "\n${GREEN}Swagger API 테스트 완료!${NC}"
 echo "=============================================="
-echo -e "${BLUE}📖 Swagger 문서: $SWAGGER_URL${NC}"
-echo -e "${BLUE}🔗 API 엔드포인트: $BASE_URL${NC}" 
+echo -e "${BLUE}Swagger 문서: $SWAGGER_URL${NC}"
+echo -e "${BLUE}API 엔드포인트: $BASE_URL${NC}" 

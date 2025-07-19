@@ -2,7 +2,7 @@
 
 이 문서는 Crypto Tracker Pro API의 각 엔드포인트를 테스트하기 위한 cURL 명령어들을 제공합니다.
 
-## 📋 응답 형식
+## 응답 형식
 
 모든 API 응답은 다음과 같은 BaseResponse 형태로 반환됩니다:
 
@@ -17,12 +17,12 @@
 }
 ```
 
-- `result`: 요청 성공 여부 (true/false)
-- `msg`: 응답 메시지
-- `result_data`: 실제 데이터
-- `httpStatus`: HTTP 상태 코드
+- result: 요청 성공 여부 (true/false)
+- msg: 응답 메시지
+- result_data: 실제 데이터
+- httpStatus: HTTP 상태 코드
 
-## 🚀 기본 엔드포인트
+## 기본 엔드포인트
 
 ### 1. 기본 환영 메시지
 ```bash
@@ -34,7 +34,7 @@ curl http://localhost:3000/
 {
   "result": true,
   "msg": "Welcome message retrieved successfully",
-  "result_data": "Welcome to Crypto Tracker Pro! 🚀",
+  "result_data": "Welcome to Crypto Tracker Pro!",
   "httpStatus": 200
 }
 ```
@@ -57,7 +57,7 @@ curl http://localhost:3000/health
 }
 ```
 
-## 🔗 바이낸스 WebSocket 연결 상태
+## 바이낸스 WebSocket 연결 상태
 
 ### 3. 연결 상태 확인
 ```bash
