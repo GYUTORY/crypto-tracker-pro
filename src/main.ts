@@ -1,5 +1,4 @@
 /**
- * main.ts - 애플리케이션 진입점
  * 
  * 이 파일은 NestJS 애플리케이션의 시작점입니다.
  * 애플리케이션을 초기화하고 서버를 시작하는 역할을 합니다.
@@ -53,18 +52,18 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Crypto Tracker Pro API')
     .setDescription(`
-      🚀 **Crypto Tracker Pro** - 실시간 암호화폐 가격 추적 API
+      🚀 Crypto Tracker Pro - 실시간 암호화폐 가격 추적 API
 
       ## 주요 기능
-      - **실시간 가격 데이터**: 바이낸스 WebSocket을 통한 실시간 비트코인/이더리움 가격 수신
-      - **메모리 기반 저장소**: 빠른 가격 데이터 조회 (30초 유효성)
-      - **폴백 시스템**: 메모리에 없으면 바이낸스 API 자동 호출
-      - **통일된 응답 형식**: 모든 API가 BaseResponse 형태로 응답
+      - 실시간 가격 데이터: 바이낸스 WebSocket을 통한 실시간 비트코인/이더리움 가격 수신
+      - 메모리 기반 저장소: 빠른 가격 데이터 조회 (30초 유효성)
+      - 폴백 시스템: 메모리에 없으면 바이낸스 API 자동 호출
+      - 통일된 응답 형식: 모든 API가 BaseResponse 형태로 응답
 
       ## 데이터 흐름
-      1. **바이낸스 WebSocket** → **WebSocket 클라이언트** → **메모리 저장소**
-      2. **API 요청** → **메모리 조회** → **BaseResponse 형태로 응답**
-      3. **메모리에 없으면** → **바이낸스 API 호출** → **메모리 저장** → **응답**
+      1. 바이낸스 WebSocket → WebSocket 클라이언트 → 메모리 저장소
+      2. API 요청 → 메모리 조회 → BaseResponse 형태로 응답
+      3. 메모리에 없으면 → 바이낸스 API 호출 → 메모리 저장 → 응답
 
       ## 응답 형식
       모든 API 응답은 다음과 같은 BaseResponse 형태로 반환됩니다:
@@ -80,14 +79,14 @@ async function bootstrap() {
       \`\`\`
 
       ## WebSocket 연결 정보
-      - **URL**: wss://stream.binance.com:9443/ws
-      - **구독 스트림**: btcusdt@ticker, ethusdt@ticker, btcusdt@trade, ethusdt@trade
-      - **자동 재연결**: 연결 끊어지면 5초 후 자동 재시도
+      - URL: wss://stream.binance.com:9443/ws
+      - 구독 스트림: btcusdt@ticker, ethusdt@ticker, btcusdt@trade, ethusdt@trade
+      - 자동 재연결: 연결 끊어지면 5초 후 자동 재시도
 
       ## 성능 특징
-      - **빠른 응답**: 메모리 기반 조회로 밀리초 단위 응답
-      - **실시간 데이터**: WebSocket을 통한 실시간 가격 업데이트
-      - **데이터 유효성**: 30초 자동 만료로 오래된 데이터 제거
+      - 빠른 응답: 메모리 기반 조회로 밀리초 단위 응답
+      - 실시간 데이터: WebSocket을 통한 실시간 가격 업데이트
+      - 데이터 유효성: 30초 자동 만료로 오래된 데이터 제거
     `)
     .setVersion('1.0.0')
     .setContact('Crypto Tracker Pro', 'https://github.com/your-repo', 'your-email@example.com')
@@ -125,10 +124,10 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   
-  console.log(`🚀 Crypto Tracker Pro is running on: http://localhost:${port}`);
-  console.log(`📡 Connecting to Binance WebSocket stream...`);
-  console.log(`🔗 API endpoints are available on: http://localhost:${port}`);
-  console.log(`📚 Swagger API Documentation: http://localhost:${port}/api-docs`);
+  console.log(`Crypto Tracker Pro is running on: http://localhost:${port}`);
+  console.log(`Connecting to Binance WebSocket stream...`);
+  console.log(`API endpoints are available on: http://localhost:${port}`);
+  console.log(`Swagger API Documentation: http://localhost:${port}/api-docs`);
 }
 
 // 애플리케이션 시작

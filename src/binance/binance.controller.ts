@@ -45,16 +45,16 @@ export class BinanceController {
     description: `
       특정 암호화폐의 현재 가격을 조회합니다.
       
-      **데이터 소스 우선순위:**
+      데이터 소스 우선순위:
       1. 메모리 저장소 (WebSocket을 통해 받은 실시간 데이터)
       2. 바이낸스 API (폴백, 메모리에 없을 때)
       
-      **지원하는 심볼:**
+      지원하는 심볼:
       - BTCUSDT (비트코인)
       - ETHUSDT (이더리움)
       - 기타 바이낸스에서 지원하는 모든 심볼
       
-      **응답 예시:**
+      응답 예시:
       - 메모리에서 조회: "Price retrieved from memory for BTCUSDT"
       - API에서 조회: "Price retrieved from API for BTCUSDT"
     `

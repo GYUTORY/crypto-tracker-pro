@@ -48,17 +48,17 @@ export class TcpController extends BaseService {
     description: `
       바이낸스 WebSocket 스트림과의 연결 상태와 메모리에 저장된 가격 데이터 정보를 확인합니다.
       
-      **반환 정보:**
+      반환 정보:
       - connection: WebSocket 연결 상태 (isConnected, url, lastUpdate)
       - memory: 메모리 저장소 정보 (priceCount, symbols, validityDuration)
       - timestamp: 조회 시간
       
-      **연결 상태:**
+      연결 상태:
       - isConnected: true/false (연결 여부)
       - url: WebSocket 연결 URL
       - lastUpdate: 마지막 업데이트 시간
       
-      **메모리 정보:**
+      메모리 정보:
       - priceCount: 저장된 가격 데이터 개수
       - symbols: 저장된 심볼 목록
       - validityDuration: 데이터 유효성 시간 (밀리초)
