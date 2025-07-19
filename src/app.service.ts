@@ -28,7 +28,7 @@ export class AppService extends BaseService {
    */
   getHello(): BaseResponse<string> {
     return this.createSuccessResponse(
-      'Welcome to Crypto Tracker Pro! 🚀',
+      'Welcome to Crypto Tracker Pro!',
       'Welcome message retrieved successfully'
     );
   }

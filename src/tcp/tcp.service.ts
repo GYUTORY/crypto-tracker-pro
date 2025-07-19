@@ -38,21 +38,21 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
   }
 
   /**
-   * 모듈 초기화 시 바이낸스 WebSocket 스트림에 연결합니다.
+   * 모듈 초기화 시 바이낸스 WebSocket 스트림에 연결
    */
   async onModuleInit() {
     await this.connectToBinance();
   }
 
   /**
-   * 모듈 종료 시 연결을 정리합니다.
+   * 모듈 종료 시 연결을 정리
    */
   async onModuleDestroy() {
     await this.disconnect();
   }
 
   /**
-   * 바이낸스 WebSocket 스트림에 연결합니다.
+   * 바이낸스 WebSocket 스트림에 연결
    */
   private async connectToBinance(): Promise<void> {
     return new Promise((resolve, reject) => {
