@@ -5,21 +5,21 @@
 
 ## 주요 기능
 
-- **바이낸스 WebSocket 연결**: 실시간 비트코인 가격 데이터 수신
-- **메모리 기반 저장소**: 빠른 가격 데이터 조회
-- **REST API**: HTTP를 통한 가격 데이터 제공
-- **폴백 시스템**: 메모리에 없으면 바이낸스 API 호출
-- **통일된 응답 형식**: 모든 API가 BaseResponse 형태로 응답
-- **Swagger API 문서화**: 완전한 API 문서 및 테스트 인터페이스
+- 바이낸스 WebSocket 연결: 실시간 비트코인 가격 데이터 수신
+- 메모리 기반 저장소: 빠른 가격 데이터 조회
+- REST API: HTTP를 통한 가격 데이터 제공
+- 폴백 시스템: 메모리에 없으면 바이낸스 API 호출
+- 통일된 응답 형식: 모든 API가 BaseResponse 형태로 응답
+- Swagger API 문서화: 완전한 API 문서 및 테스트 인터페이스
 
 ## 기술 스택
 
-- **Node.js**: 22.x
-- **NestJS**: 10.x
-- **TypeScript**: 5.x
-- **WebSocket**: ws 라이브러리
-- **HTTP Client**: axios
-- **API 문서화**: Swagger/OpenAPI
+- Node.js: 22.x
+- NestJS: 10.x
+- TypeScript: 5.x
+- WebSocket: ws 라이브러리
+- HTTP Client: axios
+- API 문서화: Swagger/OpenAPI
 
 ## 설치 및 실행
 
@@ -53,21 +53,21 @@ npm run start:prod
 - **프로덕션 환경**: https://your-domain.com/api-docs
 
 ### API 문서 특징
-- **완전한 API 스키마**: 모든 엔드포인트의 요청/응답 형식 정의
-- **실시간 테스트**: 브라우저에서 직접 API 호출 테스트 가능
-- **상세한 설명**: 각 API의 기능, 파라미터, 응답 예시 제공
-- **응답 코드**: 성공/실패 케이스별 응답 예시
-- **인터랙티브 UI**: 직관적인 사용자 인터페이스
+- 완전한 API 스키마: 모든 엔드포인트의 요청/응답 형식 정의
+- 실시간 테스트: 브라우저에서 직접 API 호출 테스트 가능
+- 상세한 설명: 각 API의 기능, 파라미터, 응답 예시 제공
+- 응답 코드: 성공/실패 케이스별 응답 예시
+- 인터랙티브 UI: 직관적인 사용자 인터페이스
 
 ### API 태그별 분류
-1. **health**: 헬스체크 및 기본 정보
+1. health: 헬스체크 및 기본 정보
    - `GET /` - 환영 메시지
    - `GET /health` - 헬스체크
 
-2. **binance**: 바이낸스 가격 데이터 API
+2. binance: 바이낸스 가격 데이터 API
    - `GET /binance/price/:symbol` - 특정 암호화폐 현재 가격
 
-3. **tcp**: WebSocket 연결 상태 및 메모리 데이터
+3. tcp: WebSocket 연결 상태 및 메모리 데이터
    - `GET /tcp/status` - WebSocket 연결 상태 및 메모리 정보
    - `GET /tcp/prices` - 메모리 저장된 모든 가격 데이터
    - `GET /tcp/reconnect` - WebSocket 재연결 시도
@@ -231,18 +231,18 @@ chmod +x api-test.sh
 
 ## 성능 특징
 
-- **빠른 응답**: 메모리 기반 조회로 밀리초 단위 응답
-- **실시간 데이터**: WebSocket을 통한 실시간 가격 업데이트
-- **폴백 지원**: 메모리에 없으면 바이낸스 API 자동 호출
-- **데이터 유효성**: 30초 자동 만료로 오래된 데이터 제거
-- **일관된 응답**: 모든 API가 동일한 BaseResponse 형태로 응답
-- **HTTP 상태 코드**: 적절한 HTTP 상태 코드와 함께 응답
+- 빠른 응답: 메모리 기반 조회로 밀리초 단위 응답
+- 실시간 데이터: WebSocket을 통한 실시간 가격 업데이트
+- 폴백 지원: 메모리에 없으면 바이낸스 API 자동 호출
+- 데이터 유효성: 30초 자동 만료로 오래된 데이터 제거
+- 일관된 응답: 모든 API가 동일한 BaseResponse 형태로 응답
+- HTTP 상태 코드: 적절한 HTTP 상태 코드와 함께 응답
 
 ## 에러 처리
 
-- **400 Bad Request**: 잘못된 요청 (잘못된 심볼 등)
-- **404 Not Found**: 데이터를 찾을 수 없음
-- **500 Internal Server Error**: 서버 내부 오류
+- 400 Bad Request: 잘못된 요청 (잘못된 심볼 등)
+- 404 Not Found: 데이터를 찾을 수 없음
+- 500 Internal Server Error: 서버 내부 오류
 
 모든 에러 응답도 BaseResponse 형태로 반환됩니다:
 
