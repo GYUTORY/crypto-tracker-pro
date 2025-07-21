@@ -47,7 +47,7 @@ export class BinanceService extends BaseService {
     const memoryPrice = this.priceStoreService.getPrice(upperSymbol);
     if (memoryPrice) {
       console.log(`Price from memory for ${upperSymbol}: ${memoryPrice.price}`);
-      return this.createSuccessResponse(
+      return this.success(
         {
           symbol: memoryPrice.symbol,
           price: memoryPrice.price,
@@ -74,18 +74,18 @@ export class BinanceService extends BaseService {
         timestamp: Date.now(),
       });
       
-      return this.createSuccessResponse(
+      return this.success(
         priceData,
         `Price retrieved from API for ${upperSymbol}`
       );
     } catch (error) {
       if (error.response?.status === 400) {
-        return this.createErrorResponse(
+        return this.false(
           `Invalid symbol: ${symbol}`,
           'E400'
         );
       }
-      return this.createInternalErrorResponse(
+      return this.fail(
         `Failed to fetch price for ${symbol}`,
         null
       );
