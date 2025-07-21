@@ -100,7 +100,7 @@ export class TcpController extends BaseService {
     const memoryInfo = this.priceStoreService.getMemoryInfoWithResponse();
     
     if (connectionStatus.result && memoryInfo.result) {
-      return this.createSuccessResponse(
+      return this.success(
         {
           connection: connectionStatus.result_data,
           memory: memoryInfo.result_data,
@@ -109,7 +109,7 @@ export class TcpController extends BaseService {
         'TCP status retrieved successfully'
       );
     } else {
-      return this.createErrorResponse('Failed to retrieve TCP status');
+      return this.false('Failed to retrieve TCP status');
     }
   }
 
@@ -123,18 +123,18 @@ export class TcpController extends BaseService {
     description: `
       메모리에 저장된 모든 암호화폐 가격 데이터를 조회합니다.
       
-      **데이터 특징:**
+      데이터 특징:
       - 30초 이내의 유효한 데이터만 반환
       - 만료된 데이터는 자동으로 삭제됨
       - WebSocket을 통해 실시간으로 업데이트됨
       
-      **반환 정보:**
+      반환 정보:
       - prices: 가격 데이터 배열
       - count: 데이터 개수
       - symbols: 심볼 목록
       - timestamp: 조회 시간
       
-      **가격 데이터 구조:**
+      가격 데이터 구조:
       - symbol: 암호화폐 심볼
       - price: 현재 가격
       - timestamp: 타임스탬프
@@ -186,7 +186,7 @@ export class TcpController extends BaseService {
     const pricesResponse = this.priceStoreService.getAllPricesWithResponse();
     
     if (pricesResponse.result) {
-      return this.createSuccessResponse(
+      return this.success(
         {
           prices: pricesResponse.result_data,
           count: this.priceStoreService.getPriceCount(),
@@ -196,7 +196,7 @@ export class TcpController extends BaseService {
         'All prices retrieved successfully'
       );
     } else {
-      return this.createErrorResponse('Failed to retrieve prices');
+      return this.false('Failed to retrieve prices');
     }
   }
 
@@ -210,13 +210,13 @@ export class TcpController extends BaseService {
     description: `
       바이낸스 WebSocket 스트림과의 연결을 수동으로 재시도합니다.
       
-      **재연결 과정:**
+      재연결 과정:
       1. 기존 연결 종료
       2. 5초 대기
       3. 새로운 연결 시도
       4. 가격 스트림 구독
       
-      **사용 시나리오:**
+      사용 시나리오:
       - 연결이 끊어진 상태에서 즉시 재연결이 필요한 경우
       - 네트워크 문제로 인한 연결 복구
       - 수동 연결 테스트
@@ -255,7 +255,7 @@ export class TcpController extends BaseService {
       const result = await this.tcpService.reconnectWithResponse();
       return result;
     } catch (error) {
-      return this.createErrorResponse(
+      return this.false(
         `Failed to reconnect: ${error.message}`,
         'E500'
       );

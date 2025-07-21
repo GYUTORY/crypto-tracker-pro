@@ -62,7 +62,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
 
       // 연결 성공 시
       this.ws.on('open', () => {
-        console.log(`✅ Connected to Binance WebSocket stream`);
+        console.log(`Connected to Binance WebSocket stream`);
         this.isConnected = true;
         
         // 구독 메시지 전송 (비트코인 가격 스트림)
@@ -78,14 +78,14 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
 
       // 연결 종료 시
       this.ws.on('close', () => {
-        console.log('❌ Connection to Binance WebSocket stream closed');
+        console.log('Connection to Binance WebSocket stream closed');
         this.isConnected = false;
         this.scheduleReconnect();
       });
 
       // 에러 발생 시
       this.ws.on('error', (error) => {
-        console.error('❌ Binance WebSocket connection error:', error.message);
+        console.error('Binance WebSocket connection error:', error.message);
         this.isConnected = false;
         reject(error);
       });
@@ -114,7 +114,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
     };
 
     this.ws.send(JSON.stringify(subscribeMessage));
-    console.log('📡 Subscribed to Binance price streams');
+    console.log('Subscribed to Binance price streams');
   }
 
   /**
@@ -181,7 +181,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
         // 메모리에 저장
         this.priceStoreService.setPrice(priceData);
         
-        console.log(`💰 Price updated: ${symbol} = $${price} (${priceChange}%)`);
+        console.log(`Price updated: ${symbol} = $${price} (${priceChange}%)`);
       }
 
     } catch (error) {
@@ -198,7 +198,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
     }
 
     this.reconnectTimer = setTimeout(() => {
-      console.log('🔄 Attempting to reconnect to Binance WebSocket stream...');
+      console.log('Attempting to reconnect to Binance WebSocket stream...');
       this.connectToBinance().catch((error) => {
         console.error('Reconnection failed:', error);
         this.scheduleReconnect();
@@ -219,7 +219,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
     }
 
     this.isConnected = false;
-    console.log('🔌 Disconnected from Binance WebSocket stream');
+    console.log('Disconnected from Binance WebSocket stream');
   }
 
   /**
@@ -249,7 +249,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
     url: string;
     lastUpdate: string;
   }> {
-    return this.createSuccessResponse(
+    return this.success(
       this.getConnectionStatus(),
       'Connection status retrieved successfully'
     );
@@ -259,7 +259,7 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
    * 수동으로 재연결을 시도합니다.
    */
   async reconnect(): Promise<void> {
-    console.log('🔄 Manual reconnection requested...');
+    console.log('Manual reconnection requested...');
     await this.disconnect();
     await this.connectToBinance();
   }
@@ -272,12 +272,12 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
   async reconnectWithResponse(): Promise<BaseResponse<boolean>> {
     try {
       await this.reconnect();
-      return this.createSuccessResponse(
+      return this.success(
         true,
         'Reconnection completed successfully'
       );
     } catch (error) {
-      return this.createInternalErrorResponse(
+      return this.fail(
         'Reconnection failed',
         null
       );

@@ -89,7 +89,7 @@ export class PriceStoreService extends BaseService {
     const priceData = this.getPrice(symbol);
     
     if (priceData) {
-      return this.createSuccessResponse(
+      return this.success(
         priceData,
         `Price data retrieved for ${symbol}`
       );
@@ -128,7 +128,7 @@ export class PriceStoreService extends BaseService {
     const prices = this.getAllPrices();
     
     if (prices.length > 0) {
-      return this.createSuccessResponse(
+      return this.success(
         prices,
         `Retrieved ${prices.length} price records`
       );
@@ -157,12 +157,12 @@ export class PriceStoreService extends BaseService {
     const deleted = this.deletePrice(symbol);
     
     if (deleted) {
-      return this.createSuccessResponse(
+      return this.success(
         true,
         `Price data deleted for ${symbol}`
       );
     } else {
-      return this.createErrorResponse(
+      return this.false(
         `No price data found to delete for ${symbol}`
       );
     }
@@ -183,7 +183,7 @@ export class PriceStoreService extends BaseService {
    */
   clearAllPricesWithResponse(): BaseResponse<boolean> {
     this.clearAllPrices();
-    return this.createSuccessResponse(
+    return this.success(
       true,
       'All price data cleared successfully'
     );
@@ -204,7 +204,7 @@ export class PriceStoreService extends BaseService {
    * @returns BaseResponse 형태의 개수 정보
    */
   getPriceCountWithResponse(): BaseResponse<{ count: number }> {
-    return this.createSuccessResponse(
+    return this.success(
       { count: this.getPriceCount() },
       'Price count retrieved successfully'
     );
@@ -228,7 +228,7 @@ export class PriceStoreService extends BaseService {
     const symbols = this.getSymbols();
     
     if (symbols.length > 0) {
-      return this.createSuccessResponse(
+      return this.success(
         symbols,
         `Retrieved ${symbols.length} symbols`
       );
@@ -264,7 +264,7 @@ export class PriceStoreService extends BaseService {
    */
   setDataValidityDurationWithResponse(duration: number): BaseResponse<{ validityDuration: number }> {
     this.setDataValidityDuration(duration);
-    return this.createSuccessResponse(
+    return this.success(
       { validityDuration: duration },
       'Data validity duration updated successfully'
     );
@@ -285,7 +285,7 @@ export class PriceStoreService extends BaseService {
    * @returns BaseResponse 형태의 유효성 시간
    */
   getDataValidityDurationWithResponse(): BaseResponse<{ validityDuration: number }> {
-    return this.createSuccessResponse(
+    return this.success(
       { validityDuration: this.DATA_VALIDITY_DURATION },
       'Data validity duration retrieved successfully'
     );
@@ -310,7 +310,7 @@ export class PriceStoreService extends BaseService {
    * @returns BaseResponse 형태의 메모리 사용량 정보
    */
   getMemoryInfoWithResponse(): BaseResponse<{ priceCount: number; symbols: string[]; validityDuration: number }> {
-    return this.createSuccessResponse(
+    return this.success(
       this.getMemoryInfo(),
       'Memory information retrieved successfully'
     );
