@@ -154,16 +154,16 @@ src/
 
 ```typescript
 // 성공 응답 생성
-this.createSuccessResponse(data, message, code);
+this.success(data, message, code);
 
 // 실패 응답 생성
-this.createErrorResponse(message, code, data);
+this.false(message, code, data);
 
 // 데이터 없음 응답 생성
 this.createNoDataResponse(message);
 
 // 서버 오류 응답 생성
-this.createInternalErrorResponse(message, data);
+this.fail(message, data);
 ```
 
 ## 환경 변수
