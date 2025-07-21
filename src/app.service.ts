@@ -27,7 +27,7 @@ export class AppService extends BaseService {
    * @returns {BaseResponse<string>} 환영 메시지
    */
   getHello(): BaseResponse<string> {
-    return this.createSuccessResponse(
+    return this.success(
       'Welcome to Crypto Tracker Pro!',
       'Welcome message retrieved successfully'
     );
@@ -45,7 +45,7 @@ export class AppService extends BaseService {
       description: 'Bitcoin Binance WebSocket Tracker with NestJS',
     };
 
-    return this.createSuccessResponse(
+    return this.success(
       appInfo,
       'Application information retrieved successfully'
     );
@@ -59,7 +59,7 @@ export class AppService extends BaseService {
   getCurrentTime(): BaseResponse<string> {
     const currentTime = new Date().toISOString();
     
-    return this.createSuccessResponse(
+    return this.success(
       currentTime,
       'Current server time retrieved successfully'
     );
@@ -76,7 +76,7 @@ export class AppService extends BaseService {
       timestamp: new Date().toISOString(),
     };
 
-    return this.createSuccessResponse(
+    return this.success(
       healthData,
       'Health check successful'
     );

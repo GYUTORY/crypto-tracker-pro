@@ -52,22 +52,21 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Crypto Tracker Pro API')
     .setDescription(`
-      🚀 Crypto Tracker Pro - 실시간 암호화폐 가격 추적 API
+      Crypto Tracker Pro - 실시간 암호화폐 가격 추적 API
 
-      ## 주요 기능
+      주요 기능:
       - 실시간 가격 데이터: 바이낸스 WebSocket을 통한 실시간 비트코인/이더리움 가격 수신
       - 메모리 기반 저장소: 빠른 가격 데이터 조회 (30초 유효성)
       - 폴백 시스템: 메모리에 없으면 바이낸스 API 자동 호출
       - 통일된 응답 형식: 모든 API가 BaseResponse 형태로 응답
 
-      ## 데이터 흐름
+      데이터 흐름:
       1. 바이낸스 WebSocket → WebSocket 클라이언트 → 메모리 저장소
       2. API 요청 → 메모리 조회 → BaseResponse 형태로 응답
       3. 메모리에 없으면 → 바이낸스 API 호출 → 메모리 저장 → 응답
 
-      ## 응답 형식
+      응답 형식:
       모든 API 응답은 다음과 같은 BaseResponse 형태로 반환됩니다:
-      \`\`\`json
       {
         "result": true,
         "msg": "성공 메시지",
@@ -76,14 +75,13 @@ async function bootstrap() {
         },
         "code": "S001"
       }
-      \`\`\`
 
-      ## WebSocket 연결 정보
+      WebSocket 연결 정보:
       - URL: wss://stream.binance.com:9443/ws
       - 구독 스트림: btcusdt@ticker, ethusdt@ticker, btcusdt@trade, ethusdt@trade
       - 자동 재연결: 연결 끊어지면 5초 후 자동 재시도
 
-      ## 성능 특징
+      성능 특징:
       - 빠른 응답: 메모리 기반 조회로 밀리초 단위 응답
       - 실시간 데이터: WebSocket을 통한 실시간 가격 업데이트
       - 데이터 유효성: 30초 자동 만료로 오래된 데이터 제거
