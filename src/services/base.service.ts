@@ -27,7 +27,7 @@ export abstract class BaseService {
    * @param code 응답 코드 (기본값: "S001")
    * @returns BaseResponse 형태의 성공 응답
    */
-  protected createSuccessResponse<T>(
+  protected success<T>(
     data: T,
     message: string = 'Success',
     code: string = 'S001'
@@ -47,7 +47,7 @@ export abstract class BaseService {
    * @param data 추가 에러 데이터 (선택사항)
    * @returns BaseResponse 형태의 실패 응답
    */
-  protected createErrorResponse<T = any>(
+  protected false<T = any>(
     message: string,
     code: string = 'E001',
     data?: T
@@ -82,7 +82,7 @@ export abstract class BaseService {
    * @param data 추가 에러 데이터 (선택사항)
    * @returns BaseResponse 형태의 서버 오류 응답
    */
-  protected createInternalErrorResponse<T = any>(
+  protected fail<T = any>(
     message: string = 'Internal server error',
     data?: T
   ): BaseResponse<T> {
