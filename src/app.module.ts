@@ -15,6 +15,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BinanceModule } from './binance/binance.module';
 import { TcpModule } from './tcp/tcp.module';
+import { ConfigModule } from './config/config.module';
 
 @Module({
   /**
@@ -25,7 +26,7 @@ import { TcpModule } from './tcp/tcp.module';
    * - 모듈 간의 의존성을 관리하고 결합도를 낮춤
    * - 각 모듈의 기능을 조합하여 전체 애플리케이션을 구성
    */
-  imports: [BinanceModule, TcpModule],
+  imports: [ConfigModule, BinanceModule, TcpModule],
   
   /**
    * controllers: HTTP 요청을 처리하는 컨트롤러들
