@@ -94,7 +94,7 @@ export class PriceStoreService extends BaseService {
         `Price data retrieved for ${symbol}`
       );
     } else {
-      return this.createNoDataResponse(`No price data found for ${symbol}`);
+      return this.fail(`No price data found for ${symbol}`);
     }
   }
 
@@ -133,7 +133,7 @@ export class PriceStoreService extends BaseService {
         `Retrieved ${prices.length} price records`
       );
     } else {
-      return this.createNoDataResponse('No price data available');
+      return this.fail('No price data available');
     }
   }
 
@@ -233,7 +233,7 @@ export class PriceStoreService extends BaseService {
         `Retrieved ${symbols.length} symbols`
       );
     } else {
-      return this.createNoDataResponse('No symbols available');
+      return this.fail('No symbols available');
     }
   }
 

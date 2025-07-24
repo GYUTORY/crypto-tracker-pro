@@ -1,8 +1,5 @@
 /**
- * 
- * 이 파일은 NestJS 애플리케이션의 시작점입니다.
- * 애플리케이션을 초기화하고 서버를 시작하는 역할을 합니다.
- * 
+ * * 
  * 주요 기능:
  * - NestJS 애플리케이션 인스턴스 생성
  * - 미들웨어 설정
@@ -88,12 +85,10 @@ async function bootstrap() {
     `)
     .setVersion('1.0.0')
     .setContact('Crypto Tracker Pro', 'https://github.com/your-repo', 'your-email@example.com')
-    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
     .addTag('health', '헬스체크 및 기본 정보')
     .addTag('binance', '바이낸스 가격 데이터 API')
     .addTag('tcp', 'WebSocket 연결 상태 및 메모리 데이터')
     .addServer('http://localhost:3000', '개발 서버')
-    .addServer('https://your-production-domain.com', '프로덕션 서버')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

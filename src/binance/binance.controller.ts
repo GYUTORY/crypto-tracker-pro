@@ -32,14 +32,7 @@ export class BinanceController {
    */
   constructor(private readonly binanceService: BinanceService) {}
 
-  /**
-   * GET /binance/price/:symbol
-   * 특정 암호화폐의 현재 가격을 조회합니다.
-   * 
-   * @param symbol 암호화폐 심볼 (예: BTCUSDT, ETHUSDT)
-   * @param res Express Response 객체
-   * @returns 현재 가격 정보
-   */
+
   @ApiOperation({
     summary: '암호화폐 현재 가격 조회',
     description: `

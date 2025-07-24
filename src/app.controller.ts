@@ -65,12 +65,6 @@ export class AppController extends BaseService {
       }
     }
   })
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  getHello(): BaseResponse<string> {
-    // AppService의 getHello 메서드를 호출하여 응답
-    return this.appService.getHello();
-  }
 
   /**
    * GET /health - 헬스 체크 엔드포인트

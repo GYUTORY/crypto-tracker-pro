@@ -10,9 +10,6 @@
  * - 데이터 유효성 검증
  * - 에러 처리 및 폴백 로직
  * 
- * 데이터 소스:
- * - 1차: TCP 서버를 통해 받은 메모리 데이터
- * - 2차: 바이낸스 API (폴백)
  * 
  * 주의사항:
  * - 메모리 데이터가 없거나 만료된 경우 API 호출
@@ -35,7 +32,7 @@ export class BinanceService extends BaseService {
 
   /**
    * 특정 암호화폐의 현재 가격을 조회합니다.
-   * 먼저 메모리에서 데이터를 찾고, 없으면 바이낸스 API를 호출합니다.
+   * 먼저 메모리에서 유효한 데이터를 찾고, 없거나 만료되었으면 바이낸스 API를 호출합니다.
    * 
    * @param symbol 암호화폐 심볼 (예: BTCUSDT, ETHUSDT)
    * @returns 현재 가격 정보
@@ -43,24 +40,64 @@ export class BinanceService extends BaseService {
   async getCurrentPrice(symbol: string): Promise<BaseResponse<{ symbol: string; price: string }>> {
     const upperSymbol = symbol.toUpperCase();
     
-    // 1차: 메모리에서 가격 데이터 조회
+    // 1차: 메모리에서 유효한 가격 데이터 조회 (만료된 데이터는 자동으로 null 반환)
+    // --> 걍 여기는 뜯어 고쳐야 할듯....
     const memoryPrice = this.priceStoreService.getPrice(upperSymbol);
     if (memoryPrice) {
-      console.log(`Price from memory for ${upperSymbol}: ${memoryPrice.price}`);
-      return this.success(
-        {
+      const dataAge = Date.now() - memoryPrice.timestamp;
+      console.log(`Price from memory for ${upperSymbol}: ${memoryPrice.price} (age: ${dataAge}ms)`);
+      
+      // 데이터가 곧 만료될 예정이면 백그라운드에서 갱신 (25초 이상 된 경우)
+      if (dataAge > 25 * 1000) {
+        console.log(`Data for ${upperSymbol} is getting old, refreshing in background...`);
+        this.refreshPriceInBackground(upperSymbol);
+      }
+      
+      return this.success({
           symbol: memoryPrice.symbol,
           price: memoryPrice.price,
-        },
-        `Price retrieved from memory for ${upperSymbol}`
-      );
+        },`Price retrieved from memory for ${upperSymbol}`);
     }
     
-    // 2차: 바이낸스 API 호출 (폴백)
-    console.log(`Price not found in memory for ${upperSymbol}, fetching from API...`);
+    // 2차: 바이낸스 API 호출 (메모리에 없거나 만료된 경우)
+    console.log(`Price not found or expired in memory for ${upperSymbol}, fetching from API...`);
+    return await this.fetchAndStorePrice(upperSymbol);
+  }
+
+  /**
+   * 백그라운드에서 가격 데이터를 갱신합니다.
+   * 
+   * @param symbol 암호화폐 심볼
+   */
+  private async refreshPriceInBackground(symbol: string): Promise<void> {
     try {
       const response = await axios.get(`${BINANCE_API_BASE_URL}/ticker/price`, {
-        params: { symbol: upperSymbol },
+        params: { symbol },
+      });
+      
+      const priceData = {
+        symbol: response.data.symbol,
+        price: response.data.price,
+        timestamp: Date.now(),
+      };
+      
+      this.priceStoreService.setPrice(priceData);
+      console.log(`Background refresh completed for ${symbol}: ${priceData.price}`);
+    } catch (error) {
+      console.error(`Background refresh failed for ${symbol}:`, error.message);
+    }
+  }
+
+  /**
+   * API에서 가격을 가져와서 메모리에 저장합니다.
+   * 
+   * @param symbol 암호화폐 심볼
+   * @returns 가격 정보
+   */
+  private async fetchAndStorePrice(symbol: string): Promise<BaseResponse<{ symbol: string; price: string }>> {
+    try {
+      const response = await axios.get(`${BINANCE_API_BASE_URL}/ticker/price`, {
+        params: { symbol },
       });
       
       const priceData = {
@@ -74,21 +111,12 @@ export class BinanceService extends BaseService {
         timestamp: Date.now(),
       });
       
-      return this.success(
-        priceData,
-        `Price retrieved from API for ${upperSymbol}`
-      );
+      return this.success(priceData, `Price retrieved from API for ${symbol}`);
     } catch (error) {
       if (error.response?.status === 400) {
-        return this.false(
-          `Invalid symbol: ${symbol}`,
-          'E400'
-        );
+        return this.false(`Invalid symbol: ${symbol}`,'E400');
       }
-      return this.fail(
-        `Failed to fetch price for ${symbol}`,
-        null
-      );
+      return this.fail(`Failed to fetch price for ${symbol}`,null);
     }
   }
 } 
