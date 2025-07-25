@@ -10,9 +10,7 @@ class TestService extends BaseService {
     return this.false(message, code, data);
   }
 
-  public testCreateNoDataResponse(message?: string) {
-    return this.createNoDataResponse(message);
-  }
+
 
   public testFail<T>(message?: string, data?: T) {
     return this.fail(message, data);
@@ -101,30 +99,7 @@ describe('BaseService', () => {
     });
   });
 
-  describe('createNoDataResponse', () => {
-    it('should create a no data response with default message', () => {
-      const result = service.testCreateNoDataResponse();
 
-      expect(result).toEqual({
-        result: true,
-        msg: 'No data found',
-        result_data: null,
-        code: 'S002'
-      });
-    });
-
-    it('should create a no data response with custom message', () => {
-      const message = 'No users found';
-      const result = service.testCreateNoDataResponse(message);
-
-      expect(result).toEqual({
-        result: true,
-        msg: message,
-        result_data: null,
-        code: 'S002'
-      });
-    });
-  });
 
   describe('fail', () => {
     it('should create a server error response with default values', () => {
@@ -163,11 +138,10 @@ describe('BaseService', () => {
     it('should always return correct response structure', () => {
       const successResponse = service.testSuccess({ data: 'test' });
       const failureResponse = service.testFalse('Error');
-      const noDataResponse = service.testCreateNoDataResponse();
       const failResponse = service.testFail('Server error');
 
       // Check that all responses have required properties
-      [successResponse, failureResponse, noDataResponse, failResponse].forEach(response => {
+      [successResponse, failureResponse, failResponse].forEach(response => {
         expect(response).toHaveProperty('result');
         expect(response).toHaveProperty('msg');
         expect(response).toHaveProperty('result_data');
@@ -181,7 +155,6 @@ describe('BaseService', () => {
     it('should have correct result values', () => {
       expect(service.testSuccess({}).result).toBe(true);
       expect(service.testFalse('Error').result).toBe(false);
-      expect(service.testCreateNoDataResponse().result).toBe(true);
       expect(service.testFail().result).toBe(false);
     });
   });

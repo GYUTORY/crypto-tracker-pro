@@ -17,6 +17,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { BaseService, BaseResponse } from '../services/base.service';
+import Logger from '../Logger';
 
 // 가격 데이터 인터페이스
 export interface PriceData {
@@ -54,7 +55,7 @@ export class PriceStoreService extends BaseService {
     
     this.priceStore.set(priceData.symbol.toUpperCase(), priceData);
     
-    console.log(`Price updated for ${priceData.symbol}: ${priceData.price}`);
+    Logger.info(`Price updated for ${priceData.symbol}: ${priceData.price}`);
   }
 
   /**
@@ -173,7 +174,7 @@ export class PriceStoreService extends BaseService {
    */
   clearAllPrices(): void {
     this.priceStore.clear();
-    console.log('All price data cleared');
+    Logger.info('All price data cleared');
   }
 
   /**

@@ -53,13 +53,6 @@ export class HealthResponseDto {
  */
 export class WelcomeResponseDto {
   @ApiProperty({
-    description: '환영 메시지',
-    example: 'Welcome to Crypto Tracker Pro API!',
-    type: String
-  })
-  message: string;
-
-  @ApiProperty({
     description: 'API 버전',
     example: '1.0.0',
     type: String
@@ -72,11 +65,4 @@ export class WelcomeResponseDto {
     type: String
   })
   documentation: string;
-
-  @ApiProperty({
-    description: '사용 가능한 엔드포인트',
-    example: ['/health', '/binance/price/:symbol', '/tcp/status'],
-    type: [String]
-  })
-  endpoints: string[];
 } 

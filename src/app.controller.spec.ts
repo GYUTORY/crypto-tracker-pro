@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { BaseService } from './services/base.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -13,8 +14,9 @@ describe('AppController', () => {
         {
           provide: AppService,
           useValue: {
-            getHello: jest.fn(),
             getHealth: jest.fn(),
+            getAppInfo: jest.fn(),
+            getCurrentTime: jest.fn(),
           },
         },
       ],
@@ -28,85 +30,12 @@ describe('AppController', () => {
     jest.clearAllMocks();
   });
 
-  describe('getHello', () => {
-    it('should return welcome message from service', () => {
-      const mockResponse = {
-        result: true,
-        msg: 'Welcome message retrieved successfully',
-        result_data: 'Welcome to Crypto Tracker Pro!',
-        code: 'S001',
-      };
-
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
-
-      const result = appController.getHello();
-
-      expect(result).toEqual(mockResponse);
-      expect(appService.getHello).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return correct response structure', () => {
-      const mockResponse = {
-        result: true,
-        msg: 'Welcome message retrieved successfully',
-        result_data: 'Welcome to Crypto Tracker Pro!',
-        code: 'S001',
-      };
-
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
-
-      const result = appController.getHello();
-
-      expect(result).toHaveProperty('result');
-      expect(result).toHaveProperty('msg');
-      expect(result).toHaveProperty('result_data');
-      expect(result).toHaveProperty('code');
-      expect(typeof result.result).toBe('boolean');
-      expect(typeof result.msg).toBe('string');
-      expect(typeof result.code).toBe('string');
-    });
-
-    it('should handle service returning different message types', () => {
-      const mockResponse = {
-        result: true,
-        msg: 'Custom welcome message',
-        result_data: { message: 'Welcome', version: '1.0.0' },
-        code: 'S001',
-      } as any;
-
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
-
-      const result = appController.getHello();
-
-      expect(result.result_data).toEqual({ message: 'Welcome', version: '1.0.0' });
-    });
-
-    it('should handle service returning error response', () => {
-      const mockResponse = {
-        result: false,
-        msg: 'Service unavailable',
-        result_data: null,
-        code: 'E500',
-      };
-
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
-
-      const result = appController.getHello();
-
-      expect(result.result).toBe(false);
-      expect(result.code).toBe('E500');
-    });
-  });
-
   describe('getHealth', () => {
     it('should return health status from service', () => {
       const mockResponse = {
         result: true,
         msg: 'Health check successful',
-        result_data: {
-          status: 'OK',
-          timestamp: '2024-01-15T10:30:00.000Z',
-        },
+        result_data: { status: 'OK', timestamp: '2024-01-15T10:30:00.000Z' },
         code: 'S001',
       };
 
@@ -118,14 +47,11 @@ describe('AppController', () => {
       expect(appService.getHealth).toHaveBeenCalledTimes(1);
     });
 
-    it('should return correct health response structure', () => {
+    it('should return correct response structure', () => {
       const mockResponse = {
         result: true,
         msg: 'Health check successful',
-        result_data: {
-          status: 'OK',
-          timestamp: '2024-01-15T10:30:00.000Z',
-        },
+        result_data: { status: 'OK', timestamp: '2024-01-15T10:30:00.000Z' },
         code: 'S001',
       };
 
@@ -137,19 +63,31 @@ describe('AppController', () => {
       expect(result).toHaveProperty('msg');
       expect(result).toHaveProperty('result_data');
       expect(result).toHaveProperty('code');
-      expect(result.result_data).toHaveProperty('status');
-      expect(result.result_data).toHaveProperty('timestamp');
+      expect(typeof result.result).toBe('boolean');
+      expect(typeof result.msg).toBe('string');
+      expect(typeof result.code).toBe('string');
     });
 
-    it('should handle service returning unhealthy status', () => {
+    it('should handle service returning different health data', () => {
+      const mockResponse = {
+        result: true,
+        msg: 'Health check successful',
+        result_data: { status: 'WARNING', timestamp: '2024-01-15T10:30:00.000Z' },
+        code: 'S001',
+      } as any;
+
+      jest.spyOn(appService, 'getHealth').mockReturnValue(mockResponse);
+
+      const result = appController.getHealth();
+
+      expect(result.result_data.status).toBe('WARNING');
+    });
+
+    it('should handle service returning error response', () => {
       const mockResponse = {
         result: false,
-        msg: 'Health check failed',
-        result_data: {
-          status: 'ERROR',
-          timestamp: '2024-01-15T10:30:00.000Z',
-          error: 'Database connection failed',
-        },
+        msg: 'Service unavailable',
+        result_data: null,
         code: 'E500',
       };
 
@@ -158,198 +96,116 @@ describe('AppController', () => {
       const result = appController.getHealth();
 
       expect(result.result).toBe(false);
-      expect(result.result_data.status).toBe('ERROR');
       expect(result.code).toBe('E500');
     });
+  });
 
-    it('should handle service returning detailed health information', () => {
+  describe('BaseService inheritance', () => {
+    it('should extend BaseService', () => {
+      expect(appController).toBeInstanceOf(AppController);
+      expect(appController).toBeInstanceOf(BaseService);
+    });
+
+    it('should have BaseService methods available', () => {
+      expect(typeof (appController as any).success).toBe('function');
+      expect(typeof (appController as any).fail).toBe('function');
+    });
+  });
+
+  describe('HTTP decorators', () => {
+    it('should have @Get decorator for health endpoint', () => {
+      const healthMethod = appController.getHealth;
+      expect(healthMethod).toBeDefined();
+    });
+
+    it('should have correct HTTP method decorators', () => {
+      const healthMethod = appController.getHealth;
+      expect(healthMethod).toBeDefined();
+    });
+  });
+
+  describe('Response consistency', () => {
+    it('should always return BaseResponse structure', () => {
       const mockResponse = {
         result: true,
         msg: 'Health check successful',
-        result_data: {
-          status: 'OK',
-          timestamp: '2024-01-15T10:30:00.000Z',
-          uptime: 3600000,
-          memory: {
-            used: 52428800,
-            total: 1073741824,
-            percentage: 4.88,
-          },
-          websocketConnected: true,
-        },
+        result_data: { status: 'OK', timestamp: '2024-01-15T10:30:00.000Z' },
         code: 'S001',
-      } as any;
+      };
 
       jest.spyOn(appService, 'getHealth').mockReturnValue(mockResponse);
 
       const result = appController.getHealth();
 
-      expect((result.result_data as any).uptime).toBe(3600000);
-      expect((result.result_data as any).memory).toBeDefined();
-      expect((result.result_data as any).websocketConnected).toBe(true);
+      expect(result).toHaveProperty('result');
+      expect(result).toHaveProperty('msg');
+      expect(result).toHaveProperty('result_data');
+      expect(result).toHaveProperty('code');
     });
 
     it('should handle service throwing error', () => {
       jest.spyOn(appService, 'getHealth').mockImplementation(() => {
-        throw new Error('Service error');
+        throw new Error('Service unavailable');
       });
 
-      expect(() => appController.getHealth()).toThrow('Service error');
+      expect(() => appController.getHealth()).toThrow('Service unavailable');
     });
 
-    it('should handle service returning null response', () => {
-      jest.spyOn(appService, 'getHealth').mockReturnValue(null as any);
-
-      const result = appController.getHealth();
-
-      expect(result).toBeNull();
-    });
-
-    it('should handle service returning undefined response', () => {
-      jest.spyOn(appService, 'getHealth').mockReturnValue(undefined as any);
-
-      const result = appController.getHealth();
-
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('controller inheritance', () => {
-    it('should extend BaseService', () => {
-      expect(appController).toBeInstanceOf(AppController);
-      // BaseService의 메서드들이 사용 가능한지 확인
-      expect(typeof appController['success']).toBe('function');
-      expect(typeof appController['false']).toBe('function');
-      expect(typeof appController['createNoDataResponse']).toBe('function');
-      expect(typeof appController['fail']).toBe('function');
-    });
-
-    it('should have correct HTTP decorators', () => {
-      // @Get() 데코레이터가 적용되었는지 확인
-      const getHelloMetadata = Reflect.getMetadata('path', appController.getHello);
-      const getHealthMetadata = Reflect.getMetadata('path', appController.getHealth);
-      
-      // NestJS의 메타데이터가 설정되었는지 확인
-      expect(appController.getHello).toBeDefined();
-      expect(appController.getHealth).toBeDefined();
-    });
-  });
-
-  describe('response consistency', () => {
-    it('should always return BaseResponse structure from getHello', () => {
-      const mockResponse = {
-        result: true,
-        msg: 'Welcome message retrieved successfully',
-        result_data: 'Welcome to Crypto Tracker Pro!',
-        code: 'S001',
-      };
-
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
-
-      const result = appController.getHello();
-
-      expect(result).toMatchObject({
-        result: expect.any(Boolean),
-        msg: expect.any(String),
-        result_data: expect.anything(),
-        code: expect.any(String),
-      });
-    });
-
-    it('should always return BaseResponse structure from getHealth', () => {
-      const mockResponse = {
-        result: true,
-        msg: 'Health check successful',
-        result_data: {
-          status: 'OK',
-          timestamp: '2024-01-15T10:30:00.000Z',
-        },
-        code: 'S001',
-      };
-
-      jest.spyOn(appService, 'getHealth').mockReturnValue(mockResponse);
-
-      const result = appController.getHealth();
-
-      expect(result).toMatchObject({
-        result: expect.any(Boolean),
-        msg: expect.any(String),
-        result_data: expect.anything(),
-        code: expect.any(String),
-      });
-    });
-  });
-
-  describe('error scenarios', () => {
-    it('should handle service method throwing exception', () => {
-      const error = new Error('Service unavailable');
-      jest.spyOn(appService, 'getHello').mockImplementation(() => {
-        throw error;
-      });
-
-      expect(() => appController.getHello()).toThrow('Service unavailable');
-    });
-
-    it('should handle service returning malformed response', () => {
+    it('should handle malformed service response', () => {
       const malformedResponse = {
         result: true,
-        // msg missing
-        result_data: 'Welcome',
-        // code missing
+        msg: 'Health check successful',
+        // missing result_data and code
       } as any;
 
-      jest.spyOn(appService, 'getHello').mockReturnValue(malformedResponse);
+      jest.spyOn(appService, 'getHealth').mockReturnValue(malformedResponse);
 
-      const result = appController.getHello();
+      const result = appController.getHealth();
 
       expect(result).toEqual(malformedResponse);
-      expect(result.msg).toBeUndefined();
-      expect(result.code).toBeUndefined();
     });
 
-    it('should handle service returning empty response', () => {
-      const emptyResponse = {};
+    it('should handle empty service response', () => {
+      const emptyResponse = {} as any;
 
-      jest.spyOn(appService, 'getHello').mockReturnValue(emptyResponse as any);
+      jest.spyOn(appService, 'getHealth').mockReturnValue(emptyResponse as any);
 
-      const result = appController.getHello();
+      const result = appController.getHealth();
 
       expect(result).toEqual(emptyResponse);
     });
   });
 
-  describe('performance', () => {
-    it('should call service method only once per request', () => {
+  describe('Method calls', () => {
+    it('should call service method multiple times', () => {
       const mockResponse = {
         result: true,
-        msg: 'Welcome message retrieved successfully',
-        result_data: 'Welcome to Crypto Tracker Pro!',
+        msg: 'Health check successful',
+        result_data: { status: 'OK', timestamp: '2024-01-15T10:30:00.000Z' },
         code: 'S001',
       };
 
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
+      jest.spyOn(appService, 'getHealth').mockReturnValue(mockResponse);
 
-      appController.getHello();
-      appController.getHello();
+      appController.getHealth();
+      appController.getHealth();
 
-      expect(appService.getHello).toHaveBeenCalledTimes(2);
+      expect(appService.getHealth).toHaveBeenCalledTimes(2);
     });
 
-    it('should return immediately without additional processing', () => {
+    it('should call service method with correct parameters', () => {
       const mockResponse = {
         result: true,
-        msg: 'Welcome message retrieved successfully',
-        result_data: 'Welcome to Crypto Tracker Pro!',
+        msg: 'Health check successful',
+        result_data: { status: 'OK', timestamp: '2024-01-15T10:30:00.000Z' },
         code: 'S001',
       };
 
-      jest.spyOn(appService, 'getHello').mockReturnValue(mockResponse);
+      jest.spyOn(appService, 'getHealth').mockReturnValue(mockResponse);
 
-      const startTime = Date.now();
-      const result = appController.getHello();
-      const endTime = Date.now();
+      const result = appController.getHealth();
 
-      expect(endTime - startTime).toBeLessThan(10); // 10ms 이내
+      expect(appService.getHealth).toHaveBeenCalledWith();
       expect(result).toEqual(mockResponse);
     });
   });

@@ -23,10 +23,11 @@ import { Module } from '@nestjs/common';
 import { BinanceService } from './binance.service';
 import { BinanceController } from './binance.controller';
 import { TcpModule } from '../tcp/tcp.module';
+import { ConfigModule } from '../config/config.module';
 
 @Module({
   // TCP 모듈을 가져와서 PriceStoreService 사용
-  imports: [TcpModule],
+  imports: [TcpModule, ConfigModule],
   
   // 바이낸스 가격 데이터 HTTP 요청을 처리하는 컨트롤러
   controllers: [BinanceController],

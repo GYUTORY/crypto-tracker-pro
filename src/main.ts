@@ -14,16 +14,7 @@
  * 3. Swagger 문서화 설정
  * 4. app.listen()으로 HTTP 서버 시작
  * 5. WebSocket 서버도 자동으로 시작됨
- * 
- * 환경 변수:
- * - PORT: 서버 포트 (기본값: 3000)
- * - NODE_ENV: 실행 환경 (development, production)
- * 
- * 개발 모드 실행:
- * npm run start:dev
- * 
- * 프로덕션 모드 실행:
- * npm run start:prod
+ 
  * 
  * API 문서:
  * - Swagger UI: http://localhost:3000/api-docs
@@ -32,6 +23,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import Logger from './Logger';
 
 async function bootstrap() {
   // NestJS 애플리케이션 인스턴스 생성
@@ -117,14 +109,14 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   
-  console.log(`Crypto Tracker Pro is running on: http://localhost:${port}`);
-  console.log(`Connecting to Binance WebSocket stream...`);
-  console.log(`API endpoints are available on: http://localhost:${port}`);
-  console.log(`Swagger API Documentation: http://localhost:${port}/api-docs`);
+  Logger.info(`Crypto Tracker Pro is running on: http://localhost:${port}`);
+  Logger.info(`Connecting to Binance WebSocket stream...`);
+  Logger.info(`API endpoints are available on: http://localhost:${port}`);
+  Logger.info(`Swagger API Documentation: http://localhost:${port}/api-docs`);
 }
 
 // 애플리케이션 시작
 bootstrap().catch((error) => {
-  console.error('Failed to start application:', error);
+  Logger.error('Failed to start application:', null, { error: error.message });
   process.exit(1);
 }); 

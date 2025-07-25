@@ -20,14 +20,19 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { PriceStoreService } from '../tcp/price-store.service';
 import { BaseService, BaseResponse } from '../services/base.service';
-
-// 바이낸스 API 기본 URL (폴백용)
-const BINANCE_API_BASE_URL = 'https://api.binance.com/api/v3';
+import { ConfigService } from '../config/config.service';
+import Logger from '../Logger';
 
 @Injectable()
 export class BinanceService extends BaseService {
-  constructor(private readonly priceStoreService: PriceStoreService) {
+  private readonly binanceApiBaseUrl: string;
+
+  constructor(
+    private readonly priceStoreService: PriceStoreService,
+    private readonly configService: ConfigService,
+  ) {
     super();
+    this.binanceApiBaseUrl = this.configService.get<string>('binance.baseUrl');
   }
 
   /**
@@ -41,15 +46,14 @@ export class BinanceService extends BaseService {
     const upperSymbol = symbol.toUpperCase();
     
     // 1차: 메모리에서 유효한 가격 데이터 조회 (만료된 데이터는 자동으로 null 반환)
-    // --> 걍 여기는 뜯어 고쳐야 할듯....
     const memoryPrice = this.priceStoreService.getPrice(upperSymbol);
     if (memoryPrice) {
       const dataAge = Date.now() - memoryPrice.timestamp;
-      console.log(`Price from memory for ${upperSymbol}: ${memoryPrice.price} (age: ${dataAge}ms)`);
+      Logger.info(`Price from memory for ${upperSymbol}: ${memoryPrice.price} (age: ${dataAge}ms)`);
       
       // 데이터가 곧 만료될 예정이면 백그라운드에서 갱신 (25초 이상 된 경우)
       if (dataAge > 25 * 1000) {
-        console.log(`Data for ${upperSymbol} is getting old, refreshing in background...`);
+        Logger.debug(`Data for ${upperSymbol} is getting old, refreshing in background...`);
         this.refreshPriceInBackground(upperSymbol);
       }
       
@@ -60,7 +64,7 @@ export class BinanceService extends BaseService {
     }
     
     // 2차: 바이낸스 API 호출 (메모리에 없거나 만료된 경우)
-    console.log(`Price not found or expired in memory for ${upperSymbol}, fetching from API...`);
+    Logger.info(`Price not found or expired in memory for ${upperSymbol}, fetching from API...`);
     return await this.fetchAndStorePrice(upperSymbol);
   }
 
@@ -71,7 +75,7 @@ export class BinanceService extends BaseService {
    */
   private async refreshPriceInBackground(symbol: string): Promise<void> {
     try {
-      const response = await axios.get(`${BINANCE_API_BASE_URL}/ticker/price`, {
+      const response = await axios.get(`${this.binanceApiBaseUrl}/api/v3/ticker/price`, {
         params: { symbol },
       });
       
@@ -82,9 +86,9 @@ export class BinanceService extends BaseService {
       };
       
       this.priceStoreService.setPrice(priceData);
-      console.log(`Background refresh completed for ${symbol}: ${priceData.price}`);
+      Logger.info(`Background refresh completed for ${symbol}: ${priceData.price}`);
     } catch (error) {
-      console.error(`Background refresh failed for ${symbol}:`, error.message);
+      Logger.error(`Background refresh failed for ${symbol}: ${error.message}`);
     }
   }
 
@@ -96,7 +100,7 @@ export class BinanceService extends BaseService {
    */
   private async fetchAndStorePrice(symbol: string): Promise<BaseResponse<{ symbol: string; price: string }>> {
     try {
-      const response = await axios.get(`${BINANCE_API_BASE_URL}/ticker/price`, {
+      const response = await axios.get(`${this.binanceApiBaseUrl}/api/v3/ticker/price`, {
         params: { symbol },
       });
       

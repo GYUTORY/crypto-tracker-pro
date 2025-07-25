@@ -21,17 +21,6 @@ import { BaseService, BaseResponse } from './services/base.service';
 
 @Injectable()
 export class AppService extends BaseService {
-  /**
-   * 기본 환영 메시지를 반환하는 메서드
-   * 
-   * @returns {BaseResponse<string>} 환영 메시지
-   */
-  getHello(): BaseResponse<string> {
-    return this.success(
-      'Welcome to Crypto Tracker Pro!',
-      'Welcome message retrieved successfully'
-    );
-  }
 
   /**
    * 애플리케이션 정보를 반환하는 메서드

@@ -60,21 +60,7 @@ export abstract class BaseService {
     };
   }
 
-  /**
-   * 데이터가 없는 경우의 응답을 생성합니다.
-   * @param message 메시지 (기본값: "No data found")
-   * @returns BaseResponse 형태의 빈 데이터 응답
-   */
-  protected createNoDataResponse(
-    message: string = 'No data found'
-  ): BaseResponse<null> {
-    return {
-      result: true,
-      msg: message,
-      result_data: null,
-      code: 'S002'
-    };
-  }
+
 
   /**
    * 서버 내부 오류 응답을 생성합니다.
