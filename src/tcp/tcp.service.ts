@@ -1,24 +1,10 @@
 /**
  * TcpService - 바이낸스 WebSocket 연결 서비스
  * 
- * 이 서비스는 바이낸스의 WebSocket 스트림에 직접 연결하여 실시간 비트코인 가격 정보를
- * 받아와서 PriceStoreService에 저장하는 역할을 합니다.
- * 
- * 주요 기능:
- * - 바이낸스 WebSocket 스트림 연결 및 관리
- * - 실시간 가격 데이터 수신 및 파싱
- * - 메모리 저장소에 데이터 저장
- * - 연결 상태 모니터링 및 재연결
- * - 데이터 유효성 검증
- * 
- * 바이낸스 WebSocket 스트림 정보:
- * - URL: wss://stream.binance.com:9443/ws
- * - 데이터 형식: JSON 스트림
- * 
- * 연결 관리:
- * - 자동 재연결 (연결 끊어지면 5초 후 재시도)
- * - 하트비트 메시지 처리
- * - 에러 처리 및 로깅
+ * @Injectable() - NestJS 서비스 데코레이터
+ * OnModuleInit - 모듈 초기화 시 자동 실행
+ * OnModuleDestroy - 모듈 종료 시 자동 실행
+ * WebSocket 연결 및 실시간 데이터 수신
  */
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import * as WebSocket from 'ws';
@@ -38,23 +24,17 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
     super();
   }
 
-  /**
-   * 모듈 초기화 시 바이낸스 WebSocket 스트림에 연결
-   */
+  // onModuleInit() - 모듈 초기화 시 자동 실행
   async onModuleInit() {
     await this.connectToBinance();
   }
 
-  /**
-   * 모듈 종료 시 연결을 정리
-   */
+  // onModuleDestroy() - 모듈 종료 시 자동 실행
   async onModuleDestroy() {
     await this.disconnect();
   }
 
-  /**
-   * 바이낸스 WebSocket 스트림에 연결
-   */
+  // 바이낸스 WebSocket 스트림에 연결
   private async connectToBinance(): Promise<void> {
     return new Promise((resolve, reject) => {
       Logger.info(`🔗 Connecting to Binance WebSocket stream at ${this.BINANCE_WS_URL}...`);

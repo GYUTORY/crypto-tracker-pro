@@ -1,14 +1,10 @@
 /**
  * AppModule - 메인 애플리케이션 모듈
  * 
- * NestJS에서 @Module 데코레이터는 클래스를 모듈로 정의합니다.
- * 모듈은 애플리케이션의 구조를 구성하는 기본 단위입니다.
- * 
- * 모듈의 구성 요소:
- * - imports: 다른 모듈들을 가져와서 사용 (의존성 주입)
- * - controllers: HTTP 요청을 처리하는 컨트롤러들
- * - providers: 서비스, 팩토리, 헬퍼 등 비즈니스 로직을 담당하는 클래스들
- * - exports: 다른 모듈에서 사용할 수 있도록 내보내는 프로바이더들
+ * @Module() - NestJS 모듈 데코레이터
+ * imports - 다른 모듈들을 가져와서 사용
+ * controllers - HTTP 요청을 처리하는 컨트롤러들
+ * providers - 비즈니스 로직을 담당하는 서비스들
  */
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -18,37 +14,13 @@ import { TcpModule } from './tcp/tcp.module';
 import { ConfigModule } from './config/config.module';
 
 @Module({
-  /**
-   * imports: 다른 모듈들을 가져와서 사용 (의존성 주입)
-   * 
-   * 역할:
-   * - 다른 모듈에서 제공하는 서비스들을 현재 모듈에서 사용할 수 있게 함
-   * - 모듈 간의 의존성을 관리하고 결합도를 낮춤
-   * - 각 모듈의 기능을 조합하여 전체 애플리케이션을 구성
-   * --> imports 안에서, 또 controllers, providers 안에서 사용할 수 있음
-   */
+  // imports - 다른 모듈들을 가져와서 사용 (의존성 주입)
   imports: [ConfigModule, BinanceModule, TcpModule],
   
-  /**
-   * controllers: HTTP 요청을 처리하는 컨트롤러들
-   * 
-   * 역할:
-   * - 클라이언트의 HTTP 요청(GET, POST, PUT, DELETE 등)을 받음
-   * - 요청의 URL 경로, HTTP 메서드, 파라미터를 분석
-   * - 적절한 서비스(provider)를 호출하여 비즈니스 로직 실행
-   * - 서비스의 결과를 HTTP 응답으로 변환하여 클라이언트에게 반환
-   */
+  // controllers - HTTP 요청을 처리하는 컨트롤러들
   controllers: [AppController],
   
-  /**
-   * providers: 비즈니스 로직을 담당하는 서비스들
-   * 
-   * 역할:
-   * - 실제 비즈니스 로직을 구현하는 클래스들
-   * - 데이터베이스 조작, 외부 API 호출, 데이터 처리 등
-   * - 컨트롤러에서 호출되어 실제 작업을 수행
-   * - NestJS의 의존성 주입(DI) 컨테이너에 의해 관리됨
-   */
+  // providers - 비즈니스 로직을 담당하는 서비스들
   providers: [AppService],
 })
 export class AppModule {} 

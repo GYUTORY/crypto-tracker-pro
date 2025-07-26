@@ -1,19 +1,10 @@
 /**
  * BinanceController - 바이낸스 가격 데이터 HTTP 컨트롤러
  * 
- * 이 컨트롤러는 TCP를 통해 받은 비트코인 가격 정보를 메모리에서 조회하여
- * HTTP API로 제공하는 역할을 합니다.
- * 
- * 기본 경로: /binance
- * 
- * 주요 엔드포인트:
- * - GET /binance/price/:symbol - 특정 암호화폐의 현재 가격 조회
- * 
- * HTTP 상태 코드:
- * - 200: 성공
- * - 400: 잘못된 요청 (잘못된 심볼 등)
- * - 404: 데이터를 찾을 수 없음
- * - 500: 서버 내부 오류
+ * @Controller('binance') - /binance 경로로 시작하는 컨트롤러
+ * @Get('price/:symbol') - GET 요청 처리
+ * @Param() - URL 파라미터 추출
+ * @Res() - Express Response 객체 주입
  */
 import { Controller, Get, Param, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
@@ -26,13 +17,11 @@ import { PriceResponseDto } from '../dto/price.dto';
 @ApiTags('binance')
 @Controller('binance') // 모든 엔드포인트는 /binance로 시작
 export class BinanceController {
-  /**
-   * 생성자에서 BinanceService를 주입받습니다.
-   * 메모리 기반 가격 데이터 조회를 담당합니다.
-   */
+  // constructor - 의존성 주입 (DI)
   constructor(private readonly binanceService: BinanceService) {}
 
 
+  // @Get('price/:symbol') - GET 요청 처리 (경로 파라미터)
   @ApiOperation({
     summary: '암호화폐 현재 가격 조회',
     description: `

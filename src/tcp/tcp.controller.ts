@@ -1,19 +1,9 @@
 /**
  * TcpController - WebSocket 연결 상태 및 메모리 데이터 HTTP 컨트롤러
  * 
- * 이 컨트롤러는 바이낸스 WebSocket 연결 상태와 메모리에 저장된 가격 데이터를
- * HTTP API로 제공하는 역할을 합니다.
- * 
- * 기본 경로: /tcp
- * 
- * 주요 엔드포인트:
- * - GET /tcp/status - WebSocket 연결 상태 및 메모리 정보
- * - GET /tcp/prices - 메모리에 저장된 모든 가격 데이터
- * - GET /tcp/reconnect - WebSocket 재연결 시도
- * 
- * HTTP 상태 코드:
- * - 200: 성공
- * - 500: 서버 내부 오류
+ * @Controller('tcp') - /tcp 경로로 시작하는 컨트롤러
+ * @Get() - GET 요청 처리
+ * @HttpCode() - HTTP 상태 코드 설정
  */
 import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -27,10 +17,7 @@ import { ConnectionStatusDto, MemoryInfoDto, PriceDataDto } from '../dto/price.d
 @ApiTags('tcp')
 @Controller('tcp') // 모든 엔드포인트는 /tcp로 시작
 export class TcpController extends BaseService {
-  /**
-   * 생성자에서 TcpService와 PriceStoreService를 주입받습니다.
-   * WebSocket 연결 상태와 메모리 데이터 관리를 담당합니다.
-   */
+  // constructor - 의존성 주입 (DI)
   constructor(
     private readonly tcpService: TcpService,
     private readonly priceStoreService: PriceStoreService,
@@ -38,11 +25,7 @@ export class TcpController extends BaseService {
     super();
   }
 
-  /**
-   * GET /tcp/status - WebSocket 연결 상태 및 메모리 정보 조회
-   * 
-   * @returns WebSocket 연결 상태와 메모리 정보
-   */
+  // @Get('status') - GET 요청 처리 (WebSocket 연결 상태 조회)
   @ApiOperation({
     summary: 'WebSocket 연결 상태 및 메모리 정보',
     description: `

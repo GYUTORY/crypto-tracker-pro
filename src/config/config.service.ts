@@ -1,20 +1,21 @@
+/**
+ * ConfigService - 설정 관리 서비스
+ * 
+ * @Injectable() - NestJS 서비스 데코레이터
+ * @Global() - 전역 모듈에서 사용 가능
+ * config 라이브러리를 통한 설정 값 관리
+ */
 import { Injectable } from '@nestjs/common';
 import * as config from 'config';
 
 @Injectable()
 export class ConfigService {
-  /**
-   * 설정 값을 가져옵니다.
-   * @param key 설정 키 (예: 'app.port', 'database.host')
-   * @returns 설정 값
-   */
+  // 설정 값 가져오기
   get<T>(key: string): T {
     return config.get<T>(key);
   }
 
-  /**
-   * 앱 설정을 가져옵니다.
-   */
+  // 앱 설정 가져오기
   getAppConfig() {
     return {
       name: this.get<string>('app.name'),
@@ -24,9 +25,7 @@ export class ConfigService {
     };
   }
 
-  /**
-   * 데이터베이스 설정을 가져옵니다.
-   */
+  // 데이터베이스 설정 가져오기
   getDatabaseConfig() {
     return {
       host: this.get<string>('database.host'),
@@ -37,9 +36,7 @@ export class ConfigService {
     };
   }
 
-  /**
-   * 바이낸스 API 설정을 가져옵니다.
-   */
+  // 바이낸스 API 설정 가져오기
   getBinanceConfig() {
     return {
       apiKey: this.get<string>('binance.apiKey'),
@@ -51,9 +48,7 @@ export class ConfigService {
     };
   }
 
-  /**
-   * 캐시 설정을 가져옵니다.
-   */
+  // 캐시 설정 가져오기
   getCacheConfig() {
     return {
       ttl: this.get<number>('cache.ttl'),
@@ -62,9 +57,7 @@ export class ConfigService {
     };
   }
 
-  /**
-   * 로깅 설정을 가져옵니다.
-   */
+  // 로깅 설정 가져오기
   getLoggingConfig() {
     return {
       level: this.get<string>('logging.level'),
@@ -73,9 +66,7 @@ export class ConfigService {
     };
   }
 
-  /**
-   * 보안 설정을 가져옵니다.
-   */
+  // 보안 설정 가져오기
   getSecurityConfig() {
     return {
       jwtSecret: this.get<string>('security.jwtSecret'),
@@ -84,9 +75,7 @@ export class ConfigService {
     };
   }
 
-  /**
-   * CORS 설정을 가져옵니다.
-   */
+  // CORS 설정 가져오기
   getCorsConfig() {
     return {
       origin: this.get<string[]>('cors.origin'),
@@ -94,23 +83,17 @@ export class ConfigService {
     };
   }
 
-  /**
-   * 현재 환경이 프로덕션인지 확인합니다.
-   */
+  // 현재 환경이 프로덕션인지 확인
   isProduction(): boolean {
     return this.get<string>('app.environment') === 'production';
   }
 
-  /**
-   * 현재 환경이 개발인지 확인합니다.
-   */
+  // 현재 환경이 개발인지 확인
   isDevelopment(): boolean {
     return this.get<string>('app.environment') === 'development';
   }
 
-  /**
-   * 현재 환경이 테스트인지 확인합니다.
-   */
+  // 현재 환경이 테스트인지 확인
   isTest(): boolean {
     return this.get<string>('app.environment') === 'test';
   }
