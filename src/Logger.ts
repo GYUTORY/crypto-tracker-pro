@@ -1,20 +1,8 @@
 /**
- * Logger - Winston 기반 싱글톤 로깅 클래스
+ * Logger - Winston 기반 로깅 클래스
  * 
- * 이 클래스는 Winston을 사용하여 config 기반 로깅을 제공합니다.
- * 싱글톤 패턴으로 구현되어 어디서든 Logger.info() 형태로 사용할 수 있습니다.
- * 
- * 사용법:
- * import Logger from './Logger';
- * Logger.info('메시지', '컨텍스트');
- * Logger.error('에러 메시지', '컨텍스트');
- * 
- * 주요 기능:
- * - Config 기반 로깅 레벨 관리
- * - 콘솔 및 파일 로깅
- * - 로그 로테이션
- * - JSON 및 텍스트 포맷 지원
- * - 타임스탬프 및 컬러 지원
+ * 싱글톤 패턴으로 구현된 로거
+ * Logger.info(), Logger.error() 형태로 사용
  */
 import * as winston from 'winston';
 import * as DailyRotateFile from 'winston-daily-rotate-file';
@@ -29,9 +17,7 @@ class LoggerClass {
     this.initializeLogger();
   }
 
-  /**
-   * Winston 로거를 초기화합니다.
-   */
+  // Winston 로거 초기화
   private initializeLogger(): void {
     if (this.initialized) return;
 
@@ -64,9 +50,7 @@ class LoggerClass {
     }
   }
 
-  /**
-   * 기본 로거를 초기화합니다.
-   */
+  // 기본 로거 초기화
   private initializeDefaultLogger(): void {
     this.logger = winston.createLogger({
       level: 'info',
@@ -96,9 +80,7 @@ class LoggerClass {
     this.initialized = true;
   }
 
-  /**
-   * 로그 포맷을 생성합니다.
-   */
+  // 로그 포맷 생성
   private createFormats(config: any): any {
     const formats = [];
     
@@ -156,9 +138,7 @@ class LoggerClass {
     };
   }
 
-  /**
-   * 로그 트랜스포트를 생성합니다.
-   */
+  // 로그 트랜스포트 생성
   private createTransports(config: any): winston.transport[] {
     const transports: winston.transport[] = [];
     
@@ -195,52 +175,38 @@ class LoggerClass {
     return transports;
   }
 
-  /**
-   * 에러 로깅
-   */
+  // 에러 로깅
   error(message: string, context?: string, meta?: any): void {
     this.logger.error(message, { context, ...meta });
   }
 
-  /**
-   * 경고 로깅
-   */
+  // 경고 로깅
   warn(message: string, context?: string, meta?: any): void {
     this.logger.warn(message, { context, ...meta });
   }
 
-  /**
-   * 정보 로깅
-   */
+  // 정보 로깅
   info(message: string, context?: string, meta?: any): void {
     this.logger.info(message, { context, ...meta });
   }
 
-  /**
-   * 디버그 로깅
-   */
+  // 디버그 로깅
   debug(message: string, context?: string, meta?: any): void {
     this.logger.debug(message, { context, ...meta });
   }
 
-  /**
-   * 상세 로깅
-   */
+  // 상세 로깅
   verbose(message: string, context?: string, meta?: any): void {
     this.logger.verbose(message, { context, ...meta });
   }
 
-  /**
-   * 성능 측정 로깅
-   */
+  // 성능 측정 로깅
   logPerformance(operation: string, startTime: number, context?: string): void {
     const duration = Date.now() - startTime;
     this.debug(`${operation} completed in ${duration}ms`, context);
   }
 
-  /**
-   * API 요청 로깅
-   */
+  // API 요청 로깅
   logApiRequest(method: string, url: string, duration: number, statusCode: number, context?: string): void {
     const level = statusCode >= 400 ? 'warn' : 'info';
     const message = `${method} ${url} - ${statusCode} (${duration}ms)`;
@@ -252,9 +218,7 @@ class LoggerClass {
     }
   }
 
-  /**
-   * 외부 API 호출 로깅
-   */
+  // 외부 API 호출 로깅
   logExternalApi(service: string, endpoint: string, duration: number, success: boolean, context?: string): void {
     const status = success ? 'SUCCESS' : 'FAILED';
     const message = `${service} API ${endpoint} - ${status} (${duration}ms)`;
@@ -266,16 +230,12 @@ class LoggerClass {
     }
   }
 
-  /**
-   * 데이터베이스 쿼리 로깅
-   */
+  // 데이터베이스 쿼리 로깅
   logDatabaseQuery(query: string, duration: number, context?: string): void {
     this.debug(`DB Query (${duration}ms): ${query}`, context);
   }
 
-  /**
-   * 로거 인스턴스를 반환합니다.
-   */
+  // 로거 인스턴스 반환
   getLogger(): winston.Logger {
     return this.logger;
   }

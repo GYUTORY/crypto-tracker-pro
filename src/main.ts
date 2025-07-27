@@ -22,23 +22,10 @@ async function bootstrap() {
     credentials: true, // 쿠키/인증 헤더 허용
   });
   
-  // DocumentBuilder - Swagger 문서 설정
+  // Swagger 문서 설정
   const config = new DocumentBuilder()
     .setTitle('Crypto Tracker Pro API')
-    .setDescription(`
-      Crypto Tracker Pro - 실시간 암호화폐 가격 추적 API
-
-      주요 기능:
-      - 실시간 가격 데이터: 바이낸스 WebSocket을 통한 실시간 비트코인/이더리움 가격 수신
-      - 메모리 기반 저장소: 빠른 가격 데이터 조회 (30초 유효성)
-      - 폴백 시스템: 메모리에 없으면 바이낸스 API 자동 호출
-      - 통일된 응답 형식: 모든 API가 BaseResponse 형태로 응답
-
-      데이터 흐름:
-      1. 바이낸스 WebSocket → WebSocket 클라이언트 → 메모리 저장소
-      2. API 요청 → 메모리 조회 → BaseResponse 형태로 응답
-      3. 메모리에 없으면 → 바이낸스 API 호출 → 메모리 저장 → 응답
-    `)
+    .setDescription('실시간 암호화폐 가격 추적 API')
     .setVersion('1.0.0')
     .addTag('health', '헬스체크 및 기본 정보')
     .addTag('binance', '바이낸스 가격 데이터 API')
@@ -73,10 +60,8 @@ async function bootstrap() {
   // app.listen() - HTTP 서버 시작
   await app.listen(port);
   
-  Logger.info(`Crypto Tracker Pro is running on: http://localhost:${port}`);
-  Logger.info(`Connecting to Binance WebSocket stream...`);
-  Logger.info(`API endpoints are available on: http://localhost:${port}`);
-  Logger.info(`Swagger API Documentation: http://localhost:${port}/api-docs`);
+  Logger.info(`서버 시작: http://localhost:${port}`);
+  Logger.info(`API 문서: http://localhost:${port}/api-docs`);
 }
 
 // bootstrap() 함수 실행 - 앱 시작
