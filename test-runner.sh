@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Crypto Tracker Pro 테스트 실행 스크립트
-# 다양한 테스트 옵션을 제공합니다.
+# 테스트 실행 스크립트
 
 # 색상 정의
 RED='\033[0;31m'
@@ -23,28 +22,28 @@ VERBOSE=false
 
 # 도움말 함수
 show_help() {
-    echo -e "${BLUE}Crypto Tracker Pro 테스트 실행기${NC}"
-    echo "=================================="
+    echo -e "${BLUE}테스트 실행기${NC}"
+    echo "=================="
     echo ""
     echo "사용법: $0 [옵션]"
     echo ""
     echo "옵션:"
-    echo "  -t, --type TYPE     테스트 타입 선택 (unit|e2e|all|coverage|watch)"
-    echo "  -v, --verbose       상세한 출력"
-    echo "  -h, --help          이 도움말 표시"
+    echo "  -t, --type TYPE     테스트 타입 (unit|e2e|all|coverage|watch)"
+    echo "  -v, --verbose       상세 출력"
+    echo "  -h, --help          도움말"
     echo ""
     echo "테스트 타입:"
-    echo "  unit       단위 테스트만 실행 (기본값)"
-    echo "  e2e        E2E 테스트만 실행"
-    echo "  all        모든 테스트 실행"
-    echo "  coverage   커버리지와 함께 테스트 실행"
-    echo "  watch      파일 변경 감지 모드로 테스트 실행"
+    echo "  unit       단위 테스트"
+    echo "  e2e        E2E 테스트"
+    echo "  all        모든 테스트"
+    echo "  coverage   커버리지 테스트"
+    echo "  watch      감시 모드"
     echo ""
     echo "예시:"
-    echo "  $0                    # 단위 테스트 실행"
-    echo "  $0 -t e2e            # E2E 테스트 실행"
-    echo "  $0 -t coverage -v    # 커버리지 테스트 상세 출력"
-    echo "  $0 -t watch          # 감시 모드로 테스트 실행"
+    echo "  $0                    # 단위 테스트"
+    echo "  $0 -t e2e            # E2E 테스트"
+    echo "  $0 -t coverage -v    # 커버리지 상세 출력"
+    echo "  $0 -t watch          # 감시 모드"
 }
 
 # 인수 파싱

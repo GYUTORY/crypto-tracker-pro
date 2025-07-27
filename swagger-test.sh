@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# Crypto Tracker Pro Swagger API 테스트 스크립트
-# Swagger 문서화가 제대로 작동하는지 확인합니다.
+# Swagger API 테스트 스크립트
 
 BASE_URL="http://localhost:3000"
 SWAGGER_URL="$BASE_URL/api-docs"
 
-echo "Crypto Tracker Pro Swagger API 테스트 시작"
-echo "=============================================="
+echo "Swagger API 테스트 시작"
+echo "======================="
 
 # 색상 정의
 RED='\033[0;31m'

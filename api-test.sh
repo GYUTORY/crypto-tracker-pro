@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Crypto Tracker Pro API 테스트 스크립트
-# BaseResponse 형태의 응답을 테스트합니다.
+# API 테스트 스크립트
 
 BASE_URL="http://localhost:3000"
-echo "🚀 Crypto Tracker Pro API 테스트 시작"
-echo "=================================="
+echo "API 테스트 시작"
+echo "==============="
 
 # 색상 정의
 RED='\033[0;31m'
