@@ -1,6 +1,4 @@
-# Crypto Tracker Pro API - cURL 명령어 가이드
-
-이 문서는 Crypto Tracker Pro API의 각 엔드포인트를 테스트하기 위한 cURL 명령어들을 제공합니다.
+# API cURL 명령어 가이드
 
 ## 응답 형식
 
