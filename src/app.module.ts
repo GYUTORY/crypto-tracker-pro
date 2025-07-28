@@ -12,10 +12,11 @@ import { AppService } from './app.service';
 import { BinanceModule } from './binance/binance.module';
 import { TcpModule } from './tcp/tcp.module';
 import { ConfigModule } from './config/config.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   // imports - 다른 모듈들을 가져와서 사용 (의존성 주입)
-  imports: [ConfigModule, BinanceModule, TcpModule],
+  imports: [ConfigModule, BinanceModule, TcpModule, AiModule],
   
   // controllers - HTTP 요청을 처리하는 컨트롤러들
   controllers: [AppController],

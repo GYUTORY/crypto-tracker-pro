@@ -83,6 +83,15 @@ export class ConfigService {
     };
   }
 
+  // Google AI API 설정 가져오기
+  getGoogleAIConfig() {
+    return {
+      apiKey: this.get<string>('googleai.apiKey'),
+      model: this.get<string>('googleai.model'),
+      timeout: this.get<number>('googleai.timeout'),
+    };
+  }
+
   // 현재 환경이 프로덕션인지 확인
   isProduction(): boolean {
     return this.get<string>('app.environment') === 'production';

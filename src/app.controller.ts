@@ -18,35 +18,10 @@ import { WelcomeResponseDto, HealthResponseDto } from './dto/health.dto';
 @Controller() // 기본 경로 '/'에 대한 컨트롤러
 export class AppController extends BaseService {
   // constructor - 의존성 주입 (DI)
-  constructor(
-    private readonly appService: AppService,
-  ) {
+  constructor(private readonly appService: AppService) {
     super();
   }
-
-  // @Get() - GET 요청 처리 (루트 경로 '/')
-  @ApiOperation({
-    summary: '환영 메시지',
-    description: 'Crypto Tracker Pro API에 오신 것을 환영합니다. API 기본 정보와 사용 가능한 엔드포인트를 제공합니다.'
-  })
-  @ApiResponse({
-    status: 200,
-    description: '환영 메시지 반환 성공',
-    type: BaseResponseDto,
-    schema: {
-      example: {
-        result: true,
-        msg: 'success',
-        result_data: {
-          message: 'success',
-          version: '1.0.0',
-          documentation: 'http://localhost:3000/api-docs',
-          endpoints: ['/health', '/binance/price/:symbol', '/tcp/status']
-        },
-        code: 'S001'
-      }
-    }
-  })
+ 
 
   // @Get('health') - GET 요청 처리 (경로 '/health')
   @ApiOperation({
