@@ -30,6 +30,7 @@ async function bootstrap() {
     .addTag('health', '헬스체크 및 기본 정보')
     .addTag('binance', '바이낸스 가격 데이터 API')
     .addTag('tcp', 'WebSocket 연결 상태 및 메모리 데이터')
+    .addTag('AI Analysis', 'AI 기반 기술적 분석')
     .addServer('http://localhost:3000', '개발 서버')
     .build();
 
