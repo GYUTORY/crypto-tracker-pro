@@ -2,18 +2,21 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, getSchemaPath } from '@nestjs/swagger';
 import { AiService } from './ai.service';
 import { TechnicalAnalysisService } from './technical-analysis.service';
-import { BaseResponseDto } from '../dto/base-response.dto';
+import { BaseResponseDto } from '../shared/dto/base-response.dto';
+import { BaseService } from '../shared/base-response';
 
-import Logger from '../Logger';
+import Logger from '../shared/logger';
 
 @ApiTags('AI Analysis')
 @Controller('ai')
-export class AiController {
+export class AiController extends BaseService {
 
   constructor(
     private readonly aiService: AiService,
     private readonly technicalAnalysisService: TechnicalAnalysisService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Post('technical-analysis')
   @ApiOperation({ 
@@ -132,20 +135,10 @@ export class AiController {
       // AI 분석 수행
       const analysis = await this.aiService.analyzeTechnicalIndicators(indicators);
 
-      return {
-        result: true,
-        msg: 'Technical analysis completed successfully',
-        result_data: analysis,
-        code: 'S001',
-      };
+      return this.success(analysis, 'Technical analysis completed successfully');
     } catch (error) {
       Logger.error(`Error in technical analysis: ${error.message}`);
-      return {
-        result: false,
-        msg: error.message || '기술적 분석 중 오류가 발생했습니다.',
-        result_data: null,
-        code: 'E500',
-      };
+      return this.fail(error.message || '기술적 분석 중 오류가 발생했습니다.');
     }
   }
 } 
