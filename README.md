@@ -1,34 +1,85 @@
 # Crypto Tracker Pro
 
-비트코인 실시간 가격 추적 NestJS 프로젝트
+실시간 암호화폐 가격 추적 API 서버입니다. 바이낸스 WebSocket과 REST API를 활용해 실시간 가격 데이터를 제공하고, Google Gemini AI로 기술적 분석을 수행합니다.
 
 ## 주요 기능
 
-- 바이낸스 WebSocket 연결
-- 메모리 기반 저장소
-- REST API
-- 폴백 시스템
-- Swagger 문서화
+- **실시간 가격 조회**: 바이낸스 WebSocket + REST API 폴백
+- **메모리 캐시**: 빠른 응답을 위한 인메모리 캐싱
+- **AI 분석**: Google Gemini를 활용한 기술적 분석
+- **Clean Architecture**: 확장 가능한 모듈 구조
 
 ## 기술 스택
 
-- Node.js: 22.x
-- NestJS: 10.x
-- TypeScript: 5.x
-- WebSocket: ws 라이브러리
-- HTTP Client: axios
-- API 문서화: Swagger/OpenAPI
+- **Framework**: NestJS 10.x
+- **Language**: TypeScript 5.x
+- **WebSocket**: ws
+- **HTTP Client**: axios
+- **AI**: Google Generative AI
+- **Documentation**: Swagger/OpenAPI
+
+## 프로젝트 구조
+
+```
+src/
+├── domain/                    # 도메인 엔티티 & 인터페이스
+│   ├── entities/
+│   │   ├── price.entity.ts
+│   │   └── technical-analysis.entity.ts
+│   └── repositories/
+│       ├── price-repository.interface.ts
+│       ├── binance-repository.interface.ts
+│       └── ai-repository.interface.ts
+├── application/              # 비즈니스 로직 (Use Cases)
+│   ├── use-cases/
+│   │   ├── get-price.use-case.ts
+│   │   └── analyze-technical.use-case.ts
+│   └── application.module.ts
+├── infrastructure/           # 외부 시스템 연동
+│   ├── repositories/
+│   │   ├── memory-price.repository.ts
+│   │   ├── binance-api.repository.ts
+│   │   └── google-ai.repository.ts
+│   └── infrastructure.module.ts
+├── presentation/             # HTTP API (Controllers)
+│   ├── controllers/
+│   │   ├── price.controller.ts
+│   │   ├── ai.controller.ts
+│   │   ├── binance.controller.ts
+│   │   └── tcp.controller.ts
+│   └── presentation.module.ts
+├── shared/                   # 공통 유틸리티
+│   ├── base-response.ts
+│   ├── logger.ts
+│   └── dto/
+└── config/                   # 설정 관리
+    ├── config.module.ts
+    └── config.service.ts
+```
 
 ## 설치 및 실행
 
-### 1. Node.js 버전 확인
-```bash
-node --version  # 22.x 이상이어야 합니다
-```
-
-### 2. 의존성 설치
+### 1. 의존성 설치
 ```bash
 npm install
+```
+
+### 2. 환경 변수 설정
+`.env` 파일 생성:
+```env
+PORT=3000
+NODE_ENV=development
+
+# 바이낸스 API
+BINANCE_BASE_URL=https://api.binance.com
+BINANCE_WS_URL=wss://stream.binance.com:9443/ws
+
+# Google AI
+GOOGLE_AI_API_KEY=your_google_ai_api_key
+GOOGLE_AI_MODEL=gemini-1.5-pro
+
+# 로깅
+LOG_LEVEL=info
 ```
 
 ### 3. 개발 서버 실행
@@ -42,219 +93,260 @@ npm run build
 npm run start:prod
 ```
 
-## API 문서 (Swagger)
+## API 사용법
 
-### Swagger UI 접속
-서버 실행 후 다음 URL에서 API 문서를 확인할 수 있습니다:
-
-- **개발 환경**: http://localhost:3000/api-docs
-- **프로덕션 환경**: https://your-domain.com/api-docs
-
-### API 문서 특징
-- API 스키마 정의
-- 실시간 테스트 가능
-- 상세한 설명 제공
-- 응답 코드 예시
-- 인터랙티브 UI
-
-### API 태그별 분류
-1. health: 헬스체크 및 기본 정보
-   - `GET /` - 환영 메시지
-   - `GET /health` - 헬스체크
-
-2. binance: 바이낸스 가격 데이터 API
-   - `GET /binance/price/:symbol` - 특정 암호화폐 현재 가격
-
-3. tcp: WebSocket 연결 상태 및 메모리 데이터
-   - `GET /tcp/status` - WebSocket 연결 상태 및 메모리 정보
-   - `GET /tcp/prices` - 메모리 저장된 모든 가격 데이터
-   - `GET /tcp/reconnect` - WebSocket 재연결 시도
-
-## 프로젝트 구조
-
-```
-src/
-├── main.ts                 # 애플리케이션 진입점 (Swagger 설정 포함)
-├── app.module.ts          # 루트 모듈
-├── app.controller.ts      # 기본 컨트롤러 (헬스체크)
-├── app.service.ts         # 기본 서비스
-├── dto/                   # Data Transfer Objects (Swagger 스키마)
-│   ├── base-response.dto.ts    # 공통 응답 DTO
-│   ├── price.dto.ts            # 가격 데이터 DTO
-│   └── health.dto.ts           # 헬스체크 DTO
-├── services/              # 공통 서비스
-│   └── base.service.ts    # BaseService (모든 서비스의 기본 클래스)
-├── tcp/                   # WebSocket 연결 관련 모듈
-│   ├── tcp.module.ts      # TCP 모듈
-│   ├── tcp.controller.ts  # TCP 컨트롤러 (WebSocket 상태 관리)
-│   ├── tcp.service.ts     # 바이낸스 WebSocket 연결 서비스
-│   └── price-store.service.ts # 메모리 기반 가격 저장소
-└── binance/               # 바이낸스 가격 데이터 모듈
-    ├── binance.module.ts
-    ├── binance.controller.ts
-    └── binance.service.ts
-```
-
-## 데이터 흐름
-
-1. **바이낸스 WebSocket** → **WebSocket 클라이언트** → **메모리 저장소**
-2. **API 요청** → **메모리 조회** → **BaseResponse 형태로 응답**
-3. **메모리에 없으면** → **바이낸스 API 호출** → **메모리 저장** → **응답**
-
-## API 응답 형식
-
-모든 API 응답은 다음과 같은 BaseResponse 형태로 반환됩니다:
-
-```json
-{
-  "result": true,
-  "msg": "성공 메시지",
-  "result_data": {
-    // 실제 데이터
-  },
-  "code": "S001"
-}
-```
-
-- `result`: 요청 성공 여부 (true/false)
-- `msg`: 응답 메시지
-- `result_data`: 실제 데이터
-- `code`: 응답 코드 (S001: 성공, E001: 일반 오류, E400: 잘못된 요청, E500: 서버 오류)
-
-## API 엔드포인트
-
-### 기본 엔드포인트
-- `GET /` - 환영 메시지
-- `GET /health` - 헬스체크
-
-### 바이낸스 WebSocket 연결 상태
-- `GET /tcp/status` - 바이낸스 WebSocket 연결 상태 및 메모리 정보
-- `GET /tcp/prices` - 메모리에 저장된 모든 가격 데이터
-- `GET /tcp/reconnect` - WebSocket 재연결 시도
-
-### 바이낸스 가격 데이터
-- `GET /binance/price/:symbol` - 특정 암호화폐 현재 가격
-
-## 바이낸스 WebSocket 연결
-
-### 연결 정보
-- **URL**: wss://stream.binance.com:9443/ws
-- **구독 스트림**: btcusdt@ticker, ethusdt@ticker, btcusdt@trade, ethusdt@trade
-
-### 자동 연결
-- 서버 시작 시 자동으로 바이낸스 WebSocket 스트림에 연결
-- 연결 끊어지면 5초 후 자동 재연결
-- 실시간 가격 데이터를 메모리에 자동 저장
-
-## BaseService 구조
-
-모든 서비스는 `BaseService`를 상속받아 일관된 응답 형식을 제공합니다:
-
-```typescript
-// 성공 응답 생성
-this.success(data, message, code);
-
-// 실패 응답 생성
-this.false(message, code, data);
-
-// 데이터 없음 응답 생성
-this.createNoDataResponse(message);
-
-// 서버 오류 응답 생성
-this.fail(message, data);
-```
-
-## 환경 변수
-
-`.env` 파일을 생성하고 다음 변수들을 설정하세요:
-
-```env
-# 서버 포트
-PORT=3000
-
-# 바이낸스 API (폴백용)
-BINANCE_API_URL=https://api.binance.com/api/v3
-```
-
-## 개발 도구
-
-- **코드 포맷팅**: `npm run format`
-- **린팅**: `npm run lint`
-- **테스트**: `npm run test`
-- **테스트 커버리지**: `npm run test:cov`
-- **API 문서**: http://localhost:3000/api-docs
-
-## 사용 예시
-
-### 1. Swagger UI를 통한 API 테스트
-1. 브라우저에서 http://localhost:3000/api-docs 접속
-2. 원하는 API 엔드포인트 선택
-3. "Try it out" 버튼 클릭
-4. 파라미터 입력 후 "Execute" 버튼 클릭
-5. 실시간으로 API 응답 확인
-
-### 2. API로 가격 데이터 조회
+### 가격 조회
 ```bash
-curl http://localhost:3000/binance/price/BTCUSDT
+# 기본 조회 (캐시 우선)
+GET /price/BTCUSDT
+
+# 강제 새로고침
+GET /price/BTCUSDT?forceRefresh=true
 ```
 
-**응답 예시:**
+### AI 기술적 분석
+```bash
+GET /ai/technical-analysis/BTCUSDT
+```
+
+### WebSocket 상태 확인
+```bash
+GET /tcp/status
+GET /tcp/prices
+```
+
+### 응답 형식
 ```json
 {
   "result": true,
-  "msg": "Price retrieved from memory for BTCUSDT",
+  "msg": "메모리에서 BTCUSDT 가격 조회 완료",
   "result_data": {
     "symbol": "BTCUSDT",
-    "price": "43250.50"
+    "price": "43250.50",
+    "source": "memory",
+    "age": 5000
   },
   "code": "S001"
 }
 ```
 
-### 3. 바이낸스 WebSocket 연결 상태 확인
+## 테스트
+
 ```bash
-curl http://localhost:3000/tcp/status
+# 단위 테스트
+npm test
+
+# E2E 테스트
+npm run test:e2e
+
+# 커버리지 확인
+npm run test:cov
 ```
 
-### 4. 메모리 데이터 조회
-```bash
-curl http://localhost:3000/tcp/prices
+## API 문서
+
+서버 실행 후 `http://localhost:3000/api-docs`에서 Swagger 문서를 확인할 수 있습니다.
+
+## Clean Architecture
+
+이 프로젝트는 Clean Architecture 패턴을 적용했습니다. 비즈니스 로직과 외부 의존성을 분리하여 유지보수성과 테스트 용이성을 높였습니다.
+
+### 레이어 구조
+
+```
+Presentation → Application → Domain ← Infrastructure
 ```
 
-### 5. 전체 API 테스트
-```bash
-chmod +x api-test.sh
-./api-test.sh
-```
+#### Domain Layer (도메인 계층)
+- **Entities**: `Price`, `TechnicalAnalysis` - 핵심 비즈니스 객체
+- **Repository Interfaces**: 데이터 접근 추상화
+- **특징**: 외부 의존성 없음, 순수한 비즈니스 로직
 
-## 성능 특징
+```typescript
+// Price 엔티티 - 도메인 규칙 포함
+export class Price {
+  constructor(
+    private readonly _symbol: string,
+    private readonly _price: string,
+    private readonly _timestamp: number
+  ) {
+    this.validate(); // 도메인 규칙 검증
+  }
 
-- 메모리 기반 빠른 조회
-- 실시간 데이터 업데이트
-- 폴백 시스템
-- 데이터 유효성 관리
-- 일관된 응답 형식
-
-## 에러 처리
-
-- 400 Bad Request: 잘못된 요청 (잘못된 심볼 등)
-- 404 Not Found: 데이터를 찾을 수 없음
-- 500 Internal Server Error: 서버 내부 오류
-
-모든 에러 응답도 BaseResponse 형태로 반환됩니다:
-
-```json
-{
-  "result": false,
-  "msg": "Error message",
-  "result_data": null,
-  "code": "E400"
+  isExpired(validityDuration: number): boolean {
+    return Date.now() - this._timestamp > validityDuration;
+  }
 }
 ```
 
-## Swagger 문서화 특징
+#### Application Layer (애플리케이션 계층)
+- **Use Cases**: 비즈니스 로직 캡슐화
+- **특징**: 단일 책임, 의존성 주입으로 외부 시스템과 분리
 
-- API 스키마 정의
-- 타입 안전성 보장
-- 실시간 테스트 기능
-- 자동 문서 생성 
+```typescript
+@Injectable()
+export class GetPriceUseCase extends BaseService {
+  constructor(
+    @Inject('PriceRepository') private readonly priceRepository: PriceRepository,
+    @Inject('BinanceRepository') private readonly binanceRepository: BinanceRepository
+  ) { super(); }
+
+  async execute(request: GetPriceRequest): Promise<BaseResponse<GetPriceResponse>> {
+    // 비즈니스 로직: 캐시 확인 → API 호출 → 저장
+  }
+}
+```
+
+#### Infrastructure Layer (인프라스트럭처 계층)
+- **Repository Implementations**: 실제 데이터 접근 구현
+- **External Services**: 바이낸스 API, Google AI 연동
+- **특징**: 도메인 인터페이스 구현, 외부 시스템과의 실제 통신
+
+```typescript
+@Injectable()
+export class BinanceApiRepository implements BinanceRepository {
+  async getCurrentPrice(symbol: string): Promise<Price> {
+    // 실제 바이낸스 API 호출
+  }
+}
+```
+
+#### Presentation Layer (프레젠테이션 계층)
+- **Controllers**: HTTP 요청 처리
+- **DTOs**: 요청/응답 데이터 변환
+- **특징**: 비즈니스 로직 없음, Use Case 호출만 담당
+
+### 의존성 역전 원칙
+
+도메인 계층이 외부 시스템에 의존하지 않고, 인터페이스를 통해 추상화합니다.
+
+```typescript
+// 도메인에 인터페이스 정의
+interface PriceRepository {
+  save(price: Price): Promise<void>;
+  findBySymbol(symbol: string): Promise<Price | null>;
+}
+
+// 인프라스트럭처에서 구현
+class MemoryPriceRepository implements PriceRepository {
+  // 실제 구현
+}
+```
+
+### 실제 데이터 흐름
+
+```
+1. HTTP 요청 → PriceController
+2. Controller → GetPriceUseCase.execute()
+3. UseCase → PriceRepository.findBySymbol() (인터페이스)
+4. Repository → MemoryPriceRepository.findBySymbol() (구현체)
+5. UseCase → BinanceRepository.getCurrentPrice() (폴백)
+6. UseCase → PriceRepository.save() (캐시 저장)
+7. Controller → HTTP 응답
+```
+
+### Clean Architecture의 장점
+
+#### 1. 테스트 용이성
+- 각 계층을 독립적으로 테스트 가능
+- Mock 객체로 외부 의존성 격리
+- 비즈니스 로직을 외부 시스템 없이 테스트
+
+```typescript
+// UseCase 테스트 - 실제 API 호출 없음
+describe('GetPriceUseCase', () => {
+  it('should return cached price when available', async () => {
+    const mockPriceRepository = {
+      findBySymbol: jest.fn().mockResolvedValue(mockPrice)
+    };
+    // 테스트 로직...
+  });
+});
+```
+
+#### 2. 유지보수성
+- 비즈니스 로직 변경 시 도메인 계층만 수정
+- 외부 시스템 변경 시 인프라스트럭처 계층만 수정
+- 새로운 기능 추가 시 기존 코드 영향 최소화
+
+#### 3. 확장성
+- 새로운 저장소 구현체 추가 용이
+- 새로운 AI 서비스 추가 시 인터페이스만 구현
+- 기술 스택 변경 시 도메인 로직 영향 없음
+
+### 실제 적용 사례
+
+#### 캐시 전략 변경
+메모리 캐시를 Redis로 변경할 때:
+1. `RedisPriceRepository` 구현체 생성
+2. DI 설정만 변경
+3. 도메인 로직은 전혀 수정 불필요
+
+#### AI 서비스 변경
+Google AI를 OpenAI로 변경할 때:
+1. `OpenAiRepository` 구현체 생성
+2. 인터페이스 구현
+3. 비즈니스 로직은 그대로 유지
+
+### 캐시 전략
+1. 메모리에서 먼저 조회
+2. 만료된 경우 API 호출
+3. 백그라운드에서 자동 갱신
+
+### 에러 처리
+- 계층별 에러 처리
+- 표준화된 응답 형식
+- 로깅 및 모니터링
+
+## 개발 가이드
+
+### 새로운 Use Case 추가
+1. `src/application/use-cases/`에 새 Use Case 클래스 생성
+2. `src/application/application.module.ts`에 등록
+3. `src/presentation/controllers/`에 Controller 추가
+
+### 새로운 Repository 추가
+1. `src/domain/repositories/`에 인터페이스 정의
+2. `src/infrastructure/repositories/`에 구현체 생성
+3. `src/infrastructure/infrastructure.module.ts`에 등록
+
+### 테스트 작성
+- Use Case: 비즈니스 로직 테스트
+- Controller: HTTP 요청/응답 테스트
+- Repository: 데이터 접근 테스트
+
+## 성능 최적화
+
+- **메모리 캐시**: 30초 TTL
+- **백그라운드 갱신**: 사용자 응답 차단 없음
+- **WebSocket 연결**: 실시간 데이터 스트리밍
+- **에러 재시도**: 자동 재연결 메커니즘
+
+## 모니터링
+
+- Winston 로깅
+- WebSocket 연결 상태
+- API 응답 시간
+- 에러율 추적
+
+## 배포
+
+### Docker (권장)
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY dist ./dist
+EXPOSE 3000
+CMD ["node", "dist/main"]
+```
+
+### 환경별 설정
+- `config/development.json`
+- `config/production.json`
+- `config/test.json`
+
+## 라이선스
+
+MIT License 
