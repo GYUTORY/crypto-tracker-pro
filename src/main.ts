@@ -10,7 +10,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import Logger from './Logger';
+import Logger from './shared/logger';
 
 async function bootstrap() {
   // NestFactory.create() - AppModule을 루트로 앱 인스턴스 생성

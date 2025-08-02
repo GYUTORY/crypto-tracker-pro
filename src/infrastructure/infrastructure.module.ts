@@ -2,31 +2,37 @@
  * 인프라스트럭처 모듈
  */
 import { Module } from '@nestjs/common';
-import { MemoryPriceRepository } from './repositories/memory-price.repository';
+import { ConfigModule } from '../config/config.module';
 import { BinanceApiRepository } from './repositories/binance-api.repository';
 import { GoogleAiRepository } from './repositories/google-ai.repository';
-import { ConfigModule } from '../config/config.module';
+import { MemoryPriceRepository } from './repositories/memory-price.repository';
+import { AiService } from './services/ai.service';
+import { TechnicalAnalysisService } from './services/technical-analysis.service';
 
 @Module({
   imports: [ConfigModule],
   providers: [
     {
-      provide: 'PriceRepository',
-      useClass: MemoryPriceRepository
-    },
-    {
       provide: 'BinanceRepository',
-      useClass: BinanceApiRepository
+      useClass: BinanceApiRepository,
     },
     {
       provide: 'AiRepository',
-      useClass: GoogleAiRepository
-    }
+      useClass: GoogleAiRepository,
+    },
+    {
+      provide: 'PriceRepository',
+      useClass: MemoryPriceRepository,
+    },
+    AiService,
+    TechnicalAnalysisService
   ],
   exports: [
-    'PriceRepository',
     'BinanceRepository',
-    'AiRepository'
-  ]
+    'AiRepository',
+    'PriceRepository',
+    AiService,
+    TechnicalAnalysisService
+  ],
 })
 export class InfrastructureModule {} 

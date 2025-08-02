@@ -6,8 +6,8 @@
  * 데이터 유효성 검증 및 관리
  */
 import { Injectable } from '@nestjs/common';
-import { BaseService, BaseResponse } from '../services/base.service';
-import Logger from '../Logger';
+import { BaseService, BaseResponse } from '../shared/base-response';
+import Logger from '../shared/logger';
 
 // 가격 데이터 인터페이스
 export interface PriceData {

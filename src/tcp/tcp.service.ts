@@ -9,8 +9,8 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import { PriceStoreService, PriceData } from './price-store.service';
-import { BaseService, BaseResponse } from '../services/base.service';
-import Logger from '../Logger';
+import { BaseService, BaseResponse } from '../shared/base-response';
+import Logger from '../shared/logger';
 
 @Injectable()
 export class TcpService extends BaseService implements OnModuleInit, OnModuleDestroy {
