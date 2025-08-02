@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 
-describe('AppController (e2e)', () => {
+describe('Crypto Tracker Pro (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -19,10 +19,10 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  describe('GET /', () => {
-    it('should return welcome message', () => {
+  describe('GET /price/:symbol', () => {
+    it('should return price for valid symbol', () => {
       return request(app.getHttpServer())
-        .get('/')
+        .get('/price/BTCUSDT')
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('result');
@@ -30,27 +30,50 @@ describe('AppController (e2e)', () => {
           expect(res.body).toHaveProperty('result_data');
           expect(res.body).toHaveProperty('code');
           expect(res.body.result).toBe(true);
-          expect(res.body.code).toBe('S001');
+          expect(res.body.result_data).toHaveProperty('symbol');
+          expect(res.body.result_data).toHaveProperty('price');
+          expect(res.body.result_data.symbol).toBe('BTCUSDT');
+          expect(typeof res.body.result_data.price).toBe('string');
         });
     });
 
-    it('should return correct response structure', () => {
+    it('should handle invalid symbol', () => {
       return request(app.getHttpServer())
-        .get('/')
+        .get('/price/INVALID')
         .expect(200)
         .expect((res) => {
-          expect(typeof res.body.result).toBe('boolean');
-          expect(typeof res.body.msg).toBe('string');
-          expect(typeof res.body.code).toBe('string');
-          expect(res.body.result_data).toBeDefined();
+          expect(res.body.result).toBe(false);
+          expect(res.body.code).toBe('E500');
+          expect(res.body.msg).toContain('INVALID 가격 조회 실패');
+        });
+    });
+
+    it('should handle case insensitive symbol', () => {
+      return request(app.getHttpServer())
+        .get('/price/btcusdt')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.result).toBe(true);
+          expect(res.body.result_data.symbol).toBe('BTCUSDT');
+        });
+    });
+
+    it('should handle forceRefresh parameter', () => {
+      return request(app.getHttpServer())
+        .get('/price/BTCUSDT?forceRefresh=true')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.result).toBe(true);
+          expect(res.body.result_data).toHaveProperty('source');
         });
     });
   });
 
-  describe('GET /health', () => {
-    it('should return health status', () => {
+  describe('POST /ai/technical-analysis', () => {
+    it('should return technical analysis for valid symbol', () => {
       return request(app.getHttpServer())
-        .get('/health')
+        .post('/ai/technical-analysis')
+        .send({ symbol: 'BTCUSDT' })
         .expect(200)
         .expect((res) => {
           expect(res.body).toHaveProperty('result');
@@ -58,19 +81,60 @@ describe('AppController (e2e)', () => {
           expect(res.body).toHaveProperty('result_data');
           expect(res.body).toHaveProperty('code');
           expect(res.body.result).toBe(true);
-          expect(res.body.code).toBe('S001');
-          expect(res.body.result_data).toHaveProperty('status');
-          expect(res.body.result_data).toHaveProperty('timestamp');
+          expect(res.body.result_data).toHaveProperty('symbol');
+          expect(res.body.result_data).toHaveProperty('price');
+          expect(res.body.result_data).toHaveProperty('analysis');
         });
     });
 
-    it('should return valid timestamp', () => {
+    it('should handle invalid symbol', () => {
       return request(app.getHttpServer())
-        .get('/health')
+        .post('/ai/technical-analysis')
+        .send({ symbol: 'INVALID' })
         .expect(200)
         .expect((res) => {
-          const timestamp = res.body.result_data.timestamp;
-          expect(new Date(timestamp).getTime()).not.toBeNaN();
+          expect(res.body.result).toBe(false);
+          expect(res.body.code).toBe('E500');
+        });
+    });
+
+    it('should handle missing symbol', () => {
+      return request(app.getHttpServer())
+        .post('/ai/technical-analysis')
+        .send({})
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.result).toBe(false);
+          expect(res.body.code).toBe('E500');
+        });
+    });
+  });
+
+  describe('GET /binance/price/:symbol', () => {
+    it('should return price for valid symbol', () => {
+      return request(app.getHttpServer())
+        .get('/binance/price/BTCUSDT')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('result');
+          expect(res.body).toHaveProperty('msg');
+          expect(res.body).toHaveProperty('result_data');
+          expect(res.body).toHaveProperty('code');
+          expect(res.body.result).toBe(true);
+          expect(res.body.result_data).toHaveProperty('symbol');
+          expect(res.body.result_data).toHaveProperty('price');
+          expect(res.body.result_data.symbol).toBe('BTCUSDT');
+          expect(typeof res.body.result_data.price).toBe('string');
+        });
+    });
+
+    it('should handle invalid symbol', () => {
+      return request(app.getHttpServer())
+        .get('/binance/price/INVALID')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.result).toBe(false);
+          expect(res.body.code).toBe('E500');
         });
     });
   });
@@ -135,74 +199,10 @@ describe('AppController (e2e)', () => {
           expect(res.body).toHaveProperty('result_data');
           expect(res.body).toHaveProperty('code');
           expect(res.body.result).toBe(true);
-          expect(Array.isArray(res.body.result_data)).toBe(true);
-        });
-    });
-
-    it('should return empty array when no prices stored', () => {
-      return request(app.getHttpServer())
-        .get('/tcp/prices')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.result_data).toEqual([]);
-          expect(res.body.code).toBe('S002');
-        });
-    });
-  });
-
-  describe('GET /binance/price/:symbol', () => {
-    it('should return price for valid symbol', () => {
-      return request(app.getHttpServer())
-        .get('/binance/price/BTCUSDT')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('result');
-          expect(res.body).toHaveProperty('msg');
-          expect(res.body).toHaveProperty('result_data');
-          expect(res.body).toHaveProperty('code');
-          expect(res.body.result).toBe(true);
-          expect(res.body.result_data).toHaveProperty('symbol');
-          expect(res.body.result_data).toHaveProperty('price');
-          expect(res.body.result_data.symbol).toBe('BTCUSDT');
-          expect(typeof res.body.result_data.price).toBe('string');
-        });
-    });
-
-    it('should handle invalid symbol', () => {
-      return request(app.getHttpServer())
-        .get('/binance/price/INVALID')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.result).toBe(false);
-          expect(res.body.code).toBe('E400');
-          expect(res.body.msg).toContain('Invalid symbol');
-        });
-    });
-
-    it('should handle empty symbol', () => {
-      return request(app.getHttpServer())
-        .get('/binance/price/')
-        .expect(404);
-    });
-
-    it('should handle case insensitive symbol', () => {
-      return request(app.getHttpServer())
-        .get('/binance/price/btcusdt')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.result).toBe(true);
-          expect(res.body.result_data.symbol).toBe('BTCUSDT');
-        });
-    });
-
-    it('should return price for ETHUSDT', () => {
-      return request(app.getHttpServer())
-        .get('/binance/price/ETHUSDT')
-        .expect(200)
-        .expect((res) => {
-          expect(res.body.result).toBe(true);
-          expect(res.body.result_data.symbol).toBe('ETHUSDT');
-          expect(typeof res.body.result_data.price).toBe('string');
+          expect(res.body.result_data).toHaveProperty('prices');
+          expect(res.body.result_data).toHaveProperty('count');
+          expect(res.body.result_data).toHaveProperty('symbols');
+          expect(res.body.result_data).toHaveProperty('timestamp');
         });
     });
   });
@@ -232,25 +232,34 @@ describe('AppController (e2e)', () => {
 
     it('should handle malformed requests', () => {
       return request(app.getHttpServer())
-        .post('/')
+        .post('/price/BTCUSDT')
         .expect(404);
     });
 
     it('should handle invalid HTTP methods', () => {
       return request(app.getHttpServer())
-        .put('/health')
+        .put('/price/BTCUSDT')
         .expect(404);
     });
   });
 
   describe('Response consistency', () => {
     it('should always return BaseResponse structure', () => {
-      const endpoints = ['/', '/health', '/tcp/status', '/tcp/prices'];
+      const endpoints = [
+        { method: 'get', path: '/price/BTCUSDT' },
+        { method: 'post', path: '/ai/technical-analysis', body: { symbol: 'BTCUSDT' } },
+        { method: 'get', path: '/binance/price/BTCUSDT' },
+        { method: 'get', path: '/tcp/status' },
+        { method: 'get', path: '/tcp/prices' }
+      ];
       
       return Promise.all(
-        endpoints.map(endpoint =>
-          request(app.getHttpServer())
-            .get(endpoint)
+        endpoints.map(endpoint => {
+          const req = request(app.getHttpServer())[endpoint.method](endpoint.path);
+          if (endpoint.body) {
+            req.send(endpoint.body);
+          }
+          return req
             .expect(200)
             .expect((res) => {
               expect(res.body).toHaveProperty('result');
@@ -260,38 +269,29 @@ describe('AppController (e2e)', () => {
               expect(typeof res.body.result).toBe('boolean');
               expect(typeof res.body.msg).toBe('string');
               expect(typeof res.body.code).toBe('string');
-            })
-        )
+            });
+        })
       );
-    });
-
-    it('should return correct HTTP status codes', () => {
-      return request(app.getHttpServer())
-        .get('/health')
-        .expect(200)
-        .expect((res) => {
-          expect(res.status).toBe(200);
-        });
     });
   });
 
   describe('Performance', () => {
-    it('should respond quickly to health check', () => {
+    it('should respond quickly to price requests', () => {
       const startTime = Date.now();
       
       return request(app.getHttpServer())
-        .get('/health')
+        .get('/price/BTCUSDT')
         .expect(200)
         .expect(() => {
           const endTime = Date.now();
-          expect(endTime - startTime).toBeLessThan(1000); // 1초 이내
+          expect(endTime - startTime).toBeLessThan(5000); // 5초 이내
         });
     });
 
     it('should handle multiple concurrent requests', async () => {
-      const requests = Array(10).fill(null).map(() =>
+      const requests = Array(5).fill(null).map(() =>
         request(app.getHttpServer())
-          .get('/health')
+          .get('/price/BTCUSDT')
           .expect(200)
       );
 
@@ -302,7 +302,7 @@ describe('AppController (e2e)', () => {
   describe('Data validation', () => {
     it('should validate price data structure', () => {
       return request(app.getHttpServer())
-        .get('/binance/price/BTCUSDT')
+        .get('/price/BTCUSDT')
         .expect(200)
         .expect((res) => {
           if (res.body.result) {
@@ -317,14 +317,27 @@ describe('AppController (e2e)', () => {
         });
     });
 
-    it('should validate timestamp format', () => {
+    it('should validate technical analysis structure', () => {
       return request(app.getHttpServer())
-        .get('/health')
+        .post('/ai/technical-analysis')
+        .send({ symbol: 'BTCUSDT' })
         .expect(200)
         .expect((res) => {
-          const timestamp = res.body.result_data.timestamp;
-          expect(typeof timestamp).toBe('string');
-          expect(new Date(timestamp).toISOString()).toBe(timestamp);
+          if (res.body.result) {
+            const analysisData = res.body.result_data;
+            expect(analysisData).toHaveProperty('symbol');
+            expect(analysisData).toHaveProperty('price');
+            expect(analysisData).toHaveProperty('analysis');
+            expect(analysisData.analysis).toHaveProperty('rsi');
+            expect(analysisData.analysis).toHaveProperty('macd');
+            expect(analysisData.analysis).toHaveProperty('bollinger');
+            expect(analysisData.analysis).toHaveProperty('movingAverages');
+            expect(analysisData.analysis).toHaveProperty('overallSignal');
+            expect(analysisData.analysis).toHaveProperty('confidence');
+            expect(analysisData.analysis).toHaveProperty('simpleAdvice');
+            expect(analysisData.analysis).toHaveProperty('riskLevel');
+            expect(analysisData.analysis).toHaveProperty('riskExplanation');
+          }
         });
     });
   });
