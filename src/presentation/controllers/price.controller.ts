@@ -66,11 +66,11 @@ export class PriceController {
     @Query('forceRefresh') forceRefresh?: boolean
   ): Promise<BaseResponseDto<PriceResponseDto>> {
     // 유스케이스를 호출하여 비즈니스 로직 실행
-    const result = await this.getPriceUseCase.execute({
+    const recordSet = await this.getPriceUseCase.execute({
       symbol,
       forceRefresh: forceRefresh === true
     });
 
-    return result;
+    return recordSet;
   }
 } 
