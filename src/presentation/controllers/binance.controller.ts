@@ -95,13 +95,13 @@ export class BinanceController {
     @Res() res: Response
   ): Promise<void> {
     try {
-      const result = await this.getPriceUseCase.execute({
+      const recordSet = await this.getPriceUseCase.execute({
         symbol: symbol.toUpperCase(),
         forceRefresh: false
       });
       
       // 응답 전송
-      res.json(result);
+      res.json(recordSet);
     } catch (error) {
       // 예상치 못한 에러 처리
       const errorResponse: BaseResponse<null> = {
