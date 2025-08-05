@@ -195,13 +195,13 @@ export class AiController extends BaseService {
       Logger.info(`Technical analysis requested for symbol: ${body.symbol}`);
 
       // Use Case 실행
-      // Clean Architecture에서 비즈니스 로직은 Use Case에 위임
-      const result = await this.analyzeTechnicalSimpleUseCase.execute({
+      // 비즈니스 로직은 Use Case에 위임
+      const recordSet = await this.analyzeTechnicalSimpleUseCase.execute({
         symbol: body.symbol
       });
 
-      // 결과 반환
-      return result;
+      // 분석 결과 반환
+      return recordSet;
     } catch (error) {
       // 에러 발생 시 로깅 및 에러 응답 반환
       Logger.error(`Error in technical analysis: ${error.message}`);
