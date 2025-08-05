@@ -150,7 +150,7 @@ export class TcpController extends BaseService {
   @Get('reconnect')
   @HttpCode(HttpStatus.OK)
   async reconnect(): Promise<BaseResponse<boolean>> {
-    const result = await this.tcpService.reconnectWithResponse();
-    return result;
+    const recordSet = await this.tcpService.reconnectWithResponse();
+    return recordSet;
   }
 } 
