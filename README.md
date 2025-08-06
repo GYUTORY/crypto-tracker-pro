@@ -1,13 +1,13 @@
 # Crypto Tracker Pro
 
-실시간 암호화폐 가격 추적 API 서버입니다. 바이낸스 WebSocket과 REST API를 활용해 실시간 가격 데이터를 제공하고, Google Gemini AI로 기술적 분석을 수행합니다.
+실시간 암호화폐 가격 추적 API 서버입니다. 바이낸스 WebSocket과 REST API를 활용해 실시간 가격 데이터를 제공하고, Google Gemini로 기술적 분석을 수행합니다.
 
 ## 주요 기능
 
 - **실시간 가격 조회**: 바이낸스 WebSocket + REST API 폴백
 - **메모리 캐시**: 빠른 응답을 위한 인메모리 캐싱
-- **AI 분석**: Google Gemini를 활용한 기술적 분석
-- **Clean Architecture**: 확장 가능한 모듈 구조
+- **기술적 분석**: Google Gemini를 활용한 시장 분석
+- **모듈화 구조**: 확장 가능한 코드 구조
 
 ## 기술 스택
 
@@ -22,7 +22,7 @@
 
 ```
 src/
-├── domain/                    # 도메인 엔티티 & 인터페이스
+├── domain/                    # 핵심 비즈니스 로직
 │   ├── entities/
 │   │   ├── price.entity.ts
 │   │   └── technical-analysis.entity.ts
@@ -104,7 +104,7 @@ GET /price/BTCUSDT
 GET /price/BTCUSDT?forceRefresh=true
 ```
 
-### AI 기술적 분석
+### 기술적 분석
 ```bash
 GET /ai/technical-analysis/BTCUSDT
 ```
@@ -147,17 +147,17 @@ npm run test:cov
 
 서버 실행 후 `http://localhost:3000/api-docs`에서 Swagger 문서를 확인할 수 있습니다.
 
-## Clean Architecture
+## 코드 구조
 
-이 프로젝트는 Clean Architecture 패턴을 사용했습니다. 각 계층의 역할을 명확히 나누고 의존성 방향을 일관되게 유지해서 코드를 관리하기 쉽게 만들었습니다.
+이 프로젝트는 계층화된 구조를 사용했습니다. 각 계층의 역할을 명확히 나누고 의존성 방향을 일관되게 유지해서 코드를 관리하기 쉽게 만들었습니다.
 
-### 레이어 구조
+### 계층 구조
 
 ```
 Presentation → Application → Domain ← Infrastructure
 ```
 
-### 실제 데이터 흐름
+### 실제 동작 과정
 
 사용자가 `GET /price/BTCUSDT` 요청을 보낼 때 어떤 일이 일어나는지 살펴보겠습니다.
 
@@ -186,7 +186,7 @@ Presentation → Application → Domain ← Infrastructure
 
 사용자(클라이언트)와 직접 소통하는 부분입니다. HTTP 요청을 받아서 적절한 Use Case를 호출하고 결과를 반환합니다.
 
-**하는 일**:
+**주요 역할**:
 - 비즈니스 로직은 전혀 없음
 - 요청을 받아서 응답으로 바꾸는 것만 담당
 - 에러 처리와 로깅
@@ -232,7 +232,7 @@ export class PriceController {
 
 실제 비즈니스 로직이 들어가는 곳입니다. 각 Use Case는 하나의 비즈니스 작업을 처리합니다.
 
-**하는 일**:
+**주요 역할**:
 - 하나의 Use Case가 하나의 비즈니스 작업만 담당
 - 외부 시스템과는 느슨하게 연결
 - 비즈니스 작업의 원자성 보장
@@ -311,19 +311,19 @@ export class Price {
     this.validate();
   }
 
-  // 도메인 규칙: 가격은 양수여야 함
+  // 비즈니스 규칙: 가격은 양수여야 함
   private validate(): void {
     if (parseFloat(this._price) <= 0) {
       throw new Error('가격은 0보다 커야 합니다');
     }
   }
 
-  // 도메인 로직: 가격이 만료되었는지 확인
+  // 비즈니스 로직: 가격이 만료되었는지 확인
   isExpired(validityDuration: number): boolean {
     return Date.now() - this._timestamp > validityDuration;
   }
 
-  // 도메인 로직: 가격 변동률 계산
+  // 비즈니스 로직: 가격 변동률 계산
   getChangeRate(previousPrice: Price): number {
     const current = parseFloat(this._price);
     const previous = parseFloat(previousPrice._price);
@@ -415,13 +415,13 @@ export class BinanceApiRepository implements BinanceRepository {
 
 ### 의존성 방향
 
-Clean Architecture의 핵심은 **의존성 방향**입니다. 모든 의존성이 도메인 계층을 향하도록 설계했습니다.
+이 구조의 핵심은 **의존성 방향**입니다. 모든 의존성이 도메인 계층을 향하도록 설계했습니다.
 
 ```
 Presentation → Application → Domain ← Infrastructure
 ```
 
-**의존성 역전 원칙**:
+**의존성 원칙**:
 
 1. **도메인 계층**: 어떤 외부 시스템에도 의존하지 않음
 2. **애플리케이션 계층**: 도메인 인터페이스에만 의존
@@ -486,7 +486,7 @@ export class ApplicationModule {}
 7. **캐시 저장**: 새로 조회한 데이터를 메모리에 저장
 8. **응답 반환**: 처리된 데이터를 클라이언트에게 JSON 형태로 반환
 
-### Clean Architecture의 장점
+### 이 구조의 장점
 
 #### 1. 테스트하기 쉬움
 각 계층을 독립적으로 테스트할 수 있습니다:
