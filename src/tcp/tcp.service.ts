@@ -82,20 +82,20 @@ export class TcpService extends BaseService implements OnModuleInit, OnModuleDes
    * 바이낸스 가격 스트림을 구독합니다.
    */
   private subscribeToPriceStreams(): void {
-    // 비트코인 가격 스트림 구독
+    // 비트코인 가격 스트림 구독 (KRW)
     const subscribeMessage = {
       method: 'SUBSCRIBE',
       params: [
-        'btcusdt@ticker',  // 비트코인 실시간 티커
-        'ethusdt@ticker',  // 이더리움 실시간 티커
-        'btcusdt@trade',   // 비트코인 실시간 거래
-        'ethusdt@trade'    // 이더리움 실시간 거래
+        'btckrw@ticker',   // 비트코인 실시간 티커 (KRW)
+        'ethkrw@ticker',   // 이더리움 실시간 티커 (KRW)
+        'btckrw@trade',    // 비트코인 실시간 거래 (KRW)
+        'ethkrw@trade'     // 이더리움 실시간 거래 (KRW)
       ],
       id: 1
     };
 
     this.ws.send(JSON.stringify(subscribeMessage));
-    Logger.info('Subscribed to Binance price streams');
+    Logger.info('Subscribed to Binance price streams (KRW)');
   }
 
   /**
