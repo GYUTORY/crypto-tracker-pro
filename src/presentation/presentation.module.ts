@@ -6,6 +6,7 @@ import { PriceController } from './controllers/price.controller';
 import { AiController } from './controllers/ai.controller';
 import { BinanceController } from './controllers/binance.controller';
 import { TcpController } from './controllers/tcp.controller';
+import { PredictionController } from './controllers/prediction.controller';
 import { ApplicationModule } from '../application/application.module';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { TcpModule } from '../tcp/tcp.module';
@@ -20,7 +21,8 @@ import { TcpModule } from '../tcp/tcp.module';
     PriceController,
     AiController,
     BinanceController,
-    TcpController
+    TcpController,
+    PredictionController
   ],
   exports: []
 })
