@@ -164,16 +164,16 @@ export class BinanceApiRepository implements BinanceRepository, OnModuleInit, On
     const subscribeMessage = {
       method: 'SUBSCRIBE',
       params: [
-        'btcusdt@ticker',  // 비트코인 실시간 티커
-        'ethusdt@ticker',  // 이더리움 실시간 티커
-        'btcusdt@trade',   // 비트코인 실시간 거래
-        'ethusdt@trade'    // 이더리움 실시간 거래
+        'btckrw@ticker',   // 비트코인 실시간 티커 (KRW)
+        'ethkrw@ticker',   // 이더리움 실시간 티커 (KRW)
+        'btckrw@trade',    // 비트코인 실시간 거래 (KRW)
+        'ethkrw@trade'     // 이더리움 실시간 거래 (KRW)
       ],
       id: 1
     };
 
     this.ws.send(JSON.stringify(subscribeMessage));
-    Logger.info('바이낸스 가격 스트림 구독 완료');
+    Logger.info('바이낸스 가격 스트림 구독 완료 (KRW)');
   }
 
   /**
