@@ -7,6 +7,7 @@
 - **실시간 가격 조회**: 바이낸스 WebSocket + REST API 폴백
 - **메모리 캐시**: 빠른 응답을 위한 인메모리 캐싱
 - **기술적 분석**: Google Gemini를 활용한 시장 분석
+- **가격 예측**: AI 기반 미래 가격 예측 및 지지/저항선 제공
 - **모듈화 구조**: 확장 가능한 코드 구조
 
 ## 기술 스택
@@ -109,6 +110,25 @@ GET /price/BTCUSDT?forceRefresh=true
 GET /ai/technical-analysis/BTCUSDT
 ```
 
+### 가격 예측
+```bash
+# 기본 예측 (모든 시간대)
+GET /prediction/BTCKRW
+
+# 특정 시간대만 예측
+GET /prediction/BTCKRW?timeframes=1h,4h,24h
+
+# 강제 새로고침
+GET /prediction/BTCKRW?forceRefresh=true
+
+# POST 방식으로 상세 옵션 설정
+POST /prediction/BTCKRW
+{
+  "timeframes": ["1h", "4h", "24h", "1w", "1m", "3m"],
+  "forceRefresh": false
+}
+```
+
 ### WebSocket 상태 확인
 ```bash
 GET /tcp/status
@@ -116,6 +136,8 @@ GET /tcp/prices
 ```
 
 ### 응답 형식
+
+#### 가격 조회 응답
 ```json
 {
   "result": true,
@@ -125,6 +147,47 @@ GET /tcp/prices
     "price": "43250.50",
     "source": "memory",
     "age": 5000
+  },
+  "code": "S001"
+}
+```
+
+#### 가격 예측 응답
+```json
+{
+  "result": true,
+  "msg": "AI에서 BTCKRW 가격 예측 완료",
+  "result_data": {
+    "symbol": "BTCKRW",
+    "currentPrice": "43250000",
+    "predictions": [
+      {
+        "timeframe": "1h",
+        "predictedPrice": "43500000",
+        "confidence": 75,
+        "changePercent": 0.58,
+        "trend": "bullish",
+        "explanation": "단기 상승 모멘텀"
+      },
+      {
+        "timeframe": "4h",
+        "predictedPrice": "43800000",
+        "confidence": 70,
+        "changePercent": 1.27,
+        "trend": "bullish",
+        "explanation": "중기 상승 추세"
+      }
+    ],
+    "supportLevels": ["43000000", "42500000", "42000000"],
+    "resistanceLevels": ["44000000", "44500000", "45000000"],
+    "confidence": 72,
+    "analysis": {
+      "marketSentiment": "bullish",
+      "keyFactors": ["긍정적인 기술적 지표", "거래량 증가"],
+      "riskFactors": ["시장 변동성", "규제 불확실성"],
+      "recommendation": "소량 매수 진입 고려",
+      "disclaimer": "이 예측은 투자 조언이 아닙니다."
+    }
   },
   "code": "S001"
 }
