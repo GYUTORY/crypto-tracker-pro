@@ -12,6 +12,7 @@ import { AiRepository } from '../../domain/repositories/ai-repository.interface'
 import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
 import { BaseResponse, BaseService } from '../../shared/base-response';
 import Logger from '../../shared/logger';
+import axios from 'axios';
 
 /**
  * 가격 예측 요청 데이터
@@ -140,16 +141,22 @@ export class PredictPriceUseCase extends BaseService {
    */
   private async performPricePrediction(symbol: string, timeframes: string[]): Promise<PricePrediction> {
     try {
-      // 1. 현재 가격 조회
-      const currentPrice = await this.binanceRepository.getCurrentPrice(symbol);
+      // 1. 바이낸스 API에서 지원하는 심볼로 변환
+      const binanceSymbol = this.convertToBinanceSymbol(symbol);
       
-      // 2. 기술적 지표 데이터 준비 (실제로는 더 복잡한 데이터 수집이 필요)
-      const technicalData: TechnicalData = await this.prepareTechnicalData(symbol);
+      // 2. 현재 가격 조회
+      const currentPrice = await this.binanceRepository.getCurrentPrice(binanceSymbol);
       
-      // 3. AI 예측 수행
+      // 3. KRW 페어인 경우 USDT 가격을 원화로 변환
+      const convertedPrice = await this.convertPriceToKRW(symbol, currentPrice.price);
+      
+      // 4. 기술적 지표 데이터 준비 (실제로는 더 복잡한 데이터 수집이 필요)
+      const technicalData: TechnicalData = await this.prepareTechnicalData(binanceSymbol);
+      
+      // 5. AI 예측 수행 (원래 심볼명으로, 변환된 가격 사용)
       const prediction = await this.aiRepository.predictPrice(
-        symbol,
-        currentPrice.price,
+        symbol, // 원래 심볼명 사용
+        convertedPrice,
         technicalData
       );
 
@@ -157,6 +164,122 @@ export class PredictPriceUseCase extends BaseService {
     } catch (error) {
       Logger.error(`AI 예측 수행 실패: ${error.message}`);
       throw new Error(`가격 예측 수행 실패: ${error.message}`);
+    }
+  }
+
+  /**
+   * 바이낸스 API에서 지원하는 심볼로 변환
+   * 
+   * @param symbol 원본 심볼
+   * @returns 바이낸스 API에서 지원하는 심볼
+   */
+  private convertToBinanceSymbol(symbol: string): string {
+    const upperSymbol = symbol.toUpperCase();
+    
+    // KRW 페어를 USDT 페어로 변환
+    if (upperSymbol.endsWith('KRW')) {
+      const baseSymbol = upperSymbol.replace('KRW', '');
+      return `${baseSymbol}USDT`;
+    }
+    
+    // 이미 USDT 페어이거나 다른 페어인 경우 그대로 반환
+    return upperSymbol;
+  }
+
+  /**
+   * USDT 가격을 원화로 변환
+   * 
+   * @param symbol 원본 심볼
+   * @param usdtPrice USDT 가격
+   * @returns 원화 가격
+   */
+  private async convertPriceToKRW(symbol: string, usdtPrice: string): Promise<string> {
+    const upperSymbol = symbol.toUpperCase();
+    
+    // KRW 페어인 경우에만 변환
+    if (upperSymbol.endsWith('KRW')) {
+      try {
+        // 실시간 USD/KRW 환율 가져오기
+        const usdToKRWRate = await this.getRealTimeExchangeRate();
+        
+        const usdtPriceNum = parseFloat(usdtPrice);
+        const krwPrice = usdtPriceNum * usdToKRWRate;
+        
+        // 소수점 4자리까지 반올림
+        return krwPrice.toFixed(4);
+      } catch (error) {
+        // 환율 API 실패 시 기본 환율 사용 (2025년 8월 기준)
+        Logger.warn('실시간 환율 조회 실패, 기본 환율 사용');
+        const defaultUsdToKRWRate = 1350; // 2025년 8월 기준 대략적인 환율
+        const usdtPriceNum = parseFloat(usdtPrice);
+        const krwPrice = usdtPriceNum * defaultUsdToKRWRate;
+        return krwPrice.toFixed(4);
+      }
+    }
+    
+    // KRW 페어가 아닌 경우 원래 가격 반환
+    return usdtPrice;
+  }
+
+  /**
+   * 실시간 USD/KRW 환율 조회
+   * 
+   * @returns USD/KRW 환율
+   */
+  private async getRealTimeExchangeRate(): Promise<number> {
+    try {
+      // ExchangeRate-API 사용 (무료 플랜, 더 안정적)
+      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
+        timeout: 5000, // 5초 타임아웃
+        headers: {
+          'User-Agent': 'Crypto-Tracker-Pro/1.0'
+        }
+      });
+      const data = response.data;
+      
+      if (data.rates && data.rates.KRW) {
+        const rate = data.rates.KRW;
+        Logger.info(`실시간 환율 조회 성공: 1 USD = ${rate} KRW`);
+        return rate;
+      }
+      
+      throw new Error('환율 데이터를 찾을 수 없습니다.');
+    } catch (error) {
+      Logger.error(`환율 API 호출 실패: ${error.message}`);
+      
+      // 대체 API 시도 (CurrencyAPI)
+      try {
+        const response = await axios.get('https://api.currencyapi.com/v3/latest?apikey=free&currencies=KRW&base_currency=USD', {
+          timeout: 5000
+        });
+        const data = response.data;
+        
+        if (data.data && data.data.KRW && data.data.KRW.value) {
+          const rate = data.data.KRW.value;
+          Logger.info(`대체 API 환율 조회 성공: 1 USD = ${rate} KRW`);
+          return rate;
+        }
+      } catch (secondError) {
+        Logger.error(`대체 환율 API도 실패: ${secondError.message}`);
+      }
+      
+      // 세 번째 대체 API 시도 (Open Exchange Rates)
+      try {
+        const response = await axios.get('https://open.er-api.com/v6/latest/USD', {
+          timeout: 5000
+        });
+        const data = response.data;
+        
+        if (data.rates && data.rates.KRW) {
+          const rate = data.rates.KRW;
+          Logger.info(`세 번째 API 환율 조회 성공: 1 USD = ${rate} KRW`);
+          return rate;
+        }
+      } catch (thirdError) {
+        Logger.error(`세 번째 환율 API도 실패: ${thirdError.message}`);
+      }
+      
+      throw error;
     }
   }
 

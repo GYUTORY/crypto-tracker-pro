@@ -110,7 +110,7 @@ export class GoogleAiRepository implements AiRepository {
   /**
    * 가격 예측 메인 메서드
    * 
-   * @param symbol - 예측할 암호화폐 심볼 (예: 'BTCUSDT')
+   * @param symbol - 예측할 암호화폐 심볼 (예: 'BTCUSDT', 'SHIBKRW')
    * @param currentPrice - 현재 가격 (문자열 형태)
    * @param technicalData - 기술적 지표 데이터
    * @returns PricePrediction 도메인 엔티티
@@ -131,7 +131,7 @@ export class GoogleAiRepository implements AiRepository {
     technicalData: TechnicalData
   ): Promise<PricePrediction> {
     try {
-      // AI 예측 수행
+      // AI 예측 수행 (원본 심볼명 그대로 사용)
       const prediction = await this.performPricePrediction(symbol, currentPrice, technicalData);
       
       // 예측 결과를 PricePrediction 도메인 엔티티로 변환
@@ -197,12 +197,12 @@ export class GoogleAiRepository implements AiRepository {
 다음 기술적 지표를 분석해서 JSON 형식으로만 응답해주세요:
 
 현재 ${symbol} 시장 상황:
-- 현재 가격: ${price}원
+- 현재 가격: ${price}${symbol.endsWith('KRW') ? '원' : 'USDT'}
 - RSI: ${technicalData.rsi} (30 이하면 과매도, 70 이상이면 과매수)
 - MACD: ${technicalData.macd} (시그널: ${technicalData.macdSignal})
-- 볼린저 밴드: 상단 ${technicalData.bollingerUpper}원, 하단 ${technicalData.bollingerLower}원
-- 20일 평균가: ${technicalData.ma20}원
-- 50일 평균가: ${technicalData.ma50}원
+- 볼린저 밴드: 상단 ${technicalData.bollingerUpper}${symbol.endsWith('KRW') ? '원' : 'USDT'}, 하단 ${technicalData.bollingerLower}${symbol.endsWith('KRW') ? '원' : 'USDT'}
+- 20일 평균가: ${technicalData.ma20}${symbol.endsWith('KRW') ? '원' : 'USDT'}
+- 50일 평균가: ${technicalData.ma50}${symbol.endsWith('KRW') ? '원' : 'USDT'}
 - 거래량: ${technicalData.volume} (전일 대비 ${technicalData.volumeChange}% 변화)
 
 다음 JSON 형식으로 분석해주세요:
@@ -305,12 +305,12 @@ export class GoogleAiRepository implements AiRepository {
 다음 기술적 지표를 기반으로 ${symbol}의 미래 가격을 예측해주세요:
 
 현재 ${symbol} 시장 상황:
-- 현재 가격: ${currentPrice}원
+- 현재 가격: ${currentPrice}${symbol.endsWith('KRW') ? '원' : 'USDT'}
 - RSI: ${technicalData.rsi} (30 이하면 과매도, 70 이상이면 과매수)
 - MACD: ${technicalData.macd} (시그널: ${technicalData.macdSignal})
-- 볼린저 밴드: 상단 ${technicalData.bollingerUpper}원, 하단 ${technicalData.bollingerLower}원
-- 20일 평균가: ${technicalData.ma20}원
-- 50일 평균가: ${technicalData.ma50}원
+- 볼린저 밴드: 상단 ${technicalData.bollingerUpper}${symbol.endsWith('KRW') ? '원' : 'USDT'}, 하단 ${technicalData.bollingerLower}${symbol.endsWith('KRW') ? '원' : 'USDT'}
+- 20일 평균가: ${technicalData.ma20}${symbol.endsWith('KRW') ? '원' : 'USDT'}
+- 50일 평균가: ${technicalData.ma50}${symbol.endsWith('KRW') ? '원' : 'USDT'}
 - 거래량: ${technicalData.volume} (전일 대비 ${technicalData.volumeChange}% 변화)
 
 다음 JSON 형식으로 가격 예측을 제공해주세요:
