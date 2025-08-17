@@ -1,14 +1,27 @@
 /**
  * 메모리 기반 가격 저장소
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional, OnModuleDestroy } from '@nestjs/common';
 import { Price } from '../../domain/entities/price.entity';
 import { PriceRepository } from '../../domain/repositories/price-repository.interface';
 import Logger from '../../shared/logger';
+import { ConfigService } from '../../config/config.service';
 
 @Injectable()
-export class MemoryPriceRepository implements PriceRepository {
+export class MemoryPriceRepository implements PriceRepository, OnModuleDestroy {
   private priceStore: Map<string, Price> = new Map();
+  private readonly ttlMs: number;
+  private cleanupTimer?: NodeJS.Timeout;
+
+  constructor(@Optional() private readonly configService?: ConfigService) {
+    const cacheConfig = this.configService?.getCacheConfig?.() ?? { ttl: 30_000, cleanupInterval: 30_000 };
+    this.ttlMs = cacheConfig.ttl ?? 30_000;
+    const interval = cacheConfig.cleanupInterval ?? 30_000;
+    // 주기적 만료 청소
+    this.cleanupTimer = setInterval(() => {
+      this.deleteExpired(this.ttlMs).catch(() => void 0);
+    }, interval);
+  }
 
   async save(price: Price): Promise<void> {
     this.priceStore.set(price.symbol.toUpperCase(), price);
@@ -54,5 +67,12 @@ export class MemoryPriceRepository implements PriceRepository {
 
   async getSymbols(): Promise<string[]> {
     return Array.from(this.priceStore.keys());
+  }
+
+  // 애플리케이션 종료 시 타이머 정리
+  onModuleDestroy() {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+    }
   }
 } 
