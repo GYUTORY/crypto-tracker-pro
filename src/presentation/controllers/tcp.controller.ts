@@ -5,9 +5,8 @@
  * @Get() - GET 요청 처리
  * @HttpCode() - HTTP 상태 코드 설정
  */
-import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Response } from 'express';
 import { TcpService } from '../../tcp/tcp.service';
 import { PriceStoreService } from '../../tcp/price-store.service';
 import { BaseService, BaseResponse } from '../../shared/base-response';
@@ -73,13 +72,15 @@ export class TcpController extends BaseService {
   })
   @Get('status')
   @HttpCode(HttpStatus.OK)
-  getStatus(): BaseResponse<{
+  async getStatus(): Promise<BaseResponse<{
     connection: { isConnected: boolean; url: string; lastUpdate: string };
     memory: { priceCount: number; symbols: string[]; validityDuration: number };
     timestamp: string;
-  }> {
-    const connectionStatus = this.tcpService.getConnectionStatusWithResponse();
-    const memoryInfo = this.priceStoreService.getMemoryInfoWithResponse();
+  }>> {
+    const [connectionStatus, memoryInfo] = await Promise.all([
+      this.tcpService.getConnectionStatusWithResponse(),
+      this.priceStoreService.getMemoryInfoWithResponse(),
+    ]);
     
     if (connectionStatus.result && memoryInfo.result) {
       return this.success(
@@ -109,17 +110,17 @@ export class TcpController extends BaseService {
   })
   @Get('prices')
   @HttpCode(HttpStatus.OK)
-  getAllPrices(): BaseResponse<{
+  async getAllPrices(): Promise<BaseResponse<{
     prices: any[];
     count: number;
     symbols: string[];
     timestamp: string;
-  }> {
-    const memoryPrices = this.priceStoreService.getAllPricesWithResponse();
+  }>> {
+    const memoryPrices = await this.priceStoreService.getAllPricesWithResponse();
     
     if (memoryPrices.result) {
       const prices = memoryPrices.result_data;
-      const symbols = this.priceStoreService.getSymbols();
+       const symbols = await this.priceStoreService.getSymbols();
       
       return this.success(
         {
