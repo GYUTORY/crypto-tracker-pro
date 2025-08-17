@@ -1,15 +1,17 @@
 /**
- * PriceStoreService - 메모리 기반 가격 저장소 서비스
- * 
- * @Injectable() - NestJS 서비스 데코레이터
- * Map<string, PriceData> - 메모리 저장소
- * 데이터 유효성 검증 및 관리
+ * PriceStoreService - 단일 저장소(PriceRepository) 래퍼
+ *
+ * 기존의 내부 Map을 제거하고, PriceRepository를 단일 진실 공급원(SSOT)으로 사용합니다.
+ * 컨트롤러에서 기대하는 메서드 시그니처는 유지하되 내부는 전부 Repository로 위임합니다.
  */
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BaseService, BaseResponse } from '../shared/base-response';
 import Logger from '../shared/logger';
+import { PriceRepository } from '../domain/repositories/price-repository.interface';
+import { Price } from '../domain/entities/price.entity';
+import { ConfigService } from '../config/config.service';
 
-// 가격 데이터 인터페이스
+// 가격 데이터 인터페이스 (기존 컨트롤러 호환 유지)
 export interface PriceData {
   symbol: string;
   price: string;
@@ -21,205 +23,140 @@ export interface PriceData {
 
 @Injectable()
 export class PriceStoreService extends BaseService {
-  // 메모리에 가격 데이터를 저장하는 Map
-  // key: 심볼 (예: BTCUSDT), value: 가격 데이터
-  private priceStore: Map<string, PriceData> = new Map();
-  
-  // 데이터 유효성 시간 (밀리초) - 30초
-  private DATA_VALIDITY_DURATION = 30 * 1000;
-
-  constructor() {
+  constructor(
+    @Inject('PriceRepository')
+    private readonly priceRepository: PriceRepository,
+    private readonly configService: ConfigService
+  ) {
     super();
   }
 
-  // 새로운 가격 데이터를 메모리에 저장
-  setPrice(priceData: PriceData): void {
-    // 타임스탬프가 없는 경우 현재 시간으로 설정
-    if (!priceData.timestamp) {
-      priceData.timestamp = Date.now();
-    }
-    
-    this.priceStore.set(priceData.symbol.toUpperCase(), priceData);
-    
+  // 저장: PriceData → Price 엔티티로 변환하여 저장
+  async setPrice(priceData: PriceData): Promise<void> {
+    const price = Price.create(
+      priceData.symbol,
+      priceData.price,
+      priceData.volume,
+      priceData.changePercent24h
+    );
+    await this.priceRepository.save(price);
     Logger.info(`Price updated for ${priceData.symbol}: ${priceData.price}`);
   }
 
-  // 특정 심볼의 가격 데이터 조회
-  getPrice(symbol: string): PriceData | null {
-    const priceData = this.priceStore.get(symbol.toUpperCase());
-    
-    if (!priceData) {
-      return null;
-    }
-
-    // 데이터 유효성 검사
-    if (this.isDataExpired(priceData.timestamp)) {
-      this.priceStore.delete(symbol.toUpperCase());
-      return null;
-    }
-
-    return priceData;
+  // 단건 조회 (Repository가 TTL을 자체 적용하도록 전제)
+  async getPrice(symbol: string): Promise<PriceData | null> {
+    const entity = await this.priceRepository.findBySymbol(symbol.toUpperCase());
+    if (!entity) return null;
+    return this.toPriceData(entity);
   }
 
-  // 특정 심볼의 가격 데이터 조회 (BaseResponse 형태)
-  getPriceWithResponse(symbol: string): BaseResponse<PriceData | null> {
-    const priceData = this.getPrice(symbol);
-    
+  // 응답 래핑 버전
+  async getPriceWithResponse(symbol: string): Promise<BaseResponse<PriceData | null>> {
+    const priceData = await this.getPrice(symbol);
     if (priceData) {
-      return this.success(
-        priceData,
-        `Price data retrieved for ${symbol}`
-      );
+      return this.success(priceData, `Price data retrieved for ${symbol}`);
     } else {
       return this.fail(`No price data found for ${symbol}`);
     }
   }
 
-  // 모든 저장된 가격 데이터 반환
-  getAllPrices(): PriceData[] {
-    const currentTime = Date.now();
-    const validPrices: PriceData[] = [];
-
-    for (const [symbol, priceData] of this.priceStore.entries()) {
-      if (!this.isDataExpired(priceData.timestamp)) {
-        validPrices.push(priceData);
-      } else {
-        // 만료된 데이터 삭제
-        this.priceStore.delete(symbol);
-      }
-    }
-
-    return validPrices;
+  // 전체 조회
+  async getAllPrices(): Promise<PriceData[]> {
+    const entities = await this.priceRepository.findAll();
+    return entities.map(e => this.toPriceData(e));
   }
 
-  // 모든 저장된 가격 데이터 반환 (BaseResponse 형태)
-  getAllPricesWithResponse(): BaseResponse<PriceData[]> {
-    const prices = this.getAllPrices();
-    
+  async getAllPricesWithResponse(): Promise<BaseResponse<PriceData[]>> {
+    const prices = await this.getAllPrices();
     if (prices.length > 0) {
-      return this.success(
-        prices,
-        `Retrieved ${prices.length} price records`
-      );
+      return this.success(prices, `Retrieved ${prices.length} price records`);
     } else {
       return this.fail('No price data available');
     }
   }
 
-  // 특정 심볼의 가격 데이터 삭제
-  deletePrice(symbol: string): boolean {
-    return this.priceStore.delete(symbol.toUpperCase());
+  // 삭제
+  async deletePrice(symbol: string): Promise<boolean> {
+    return this.priceRepository.deleteBySymbol(symbol.toUpperCase());
   }
 
-  // 특정 심볼의 가격 데이터 삭제 (BaseResponse 형태)
-  deletePriceWithResponse(symbol: string): BaseResponse<boolean> {
-    const deleted = this.deletePrice(symbol);
-    
+  async deletePriceWithResponse(symbol: string): Promise<BaseResponse<boolean>> {
+    const deleted = await this.deletePrice(symbol);
     if (deleted) {
-      return this.success(
-        true,
-        `Price data deleted for ${symbol}`
-      );
+      return this.success(true, `Price data deleted for ${symbol}`);
     } else {
-      return this.false(
-        `No price data found to delete for ${symbol}`
-      );
+      return this.false(`No price data found to delete for ${symbol}`);
     }
   }
 
-  // 모든 가격 데이터 삭제
-  clearAllPrices(): void {
-    this.priceStore.clear();
+  // 전체 삭제
+  async clearAllPrices(): Promise<void> {
+    await this.priceRepository.clearAll();
     Logger.info('All price data cleared');
   }
 
-  // 모든 가격 데이터 삭제 (BaseResponse 형태)
-  clearAllPricesWithResponse(): BaseResponse<boolean> {
-    this.clearAllPrices();
-    return this.success(
-      true,
-      'All price data cleared successfully'
-    );
+  async clearAllPricesWithResponse(): Promise<BaseResponse<boolean>> {
+    await this.clearAllPrices();
+    return this.success(true, 'All price data cleared successfully');
   }
 
-  // 저장된 가격 데이터 개수 반환
-  getPriceCount(): number {
-    return this.priceStore.size;
+  // 카운트
+  async getPriceCount(): Promise<number> {
+    return this.priceRepository.count();
   }
 
-  // 저장된 가격 데이터 개수 반환 (BaseResponse 형태)
-  getPriceCountWithResponse(): BaseResponse<{ count: number }> {
-    return this.success(
-      { count: this.getPriceCount() },
-      'Price count retrieved successfully'
-    );
+  async getPriceCountWithResponse(): Promise<BaseResponse<{ count: number }>> {
+    const count = await this.getPriceCount();
+    return this.success({ count }, 'Price count retrieved successfully');
   }
 
-  // 저장된 모든 심볼 목록 반환
-  getSymbols(): string[] {
-    return Array.from(this.priceStore.keys());
+  // 심볼 목록
+  async getSymbols(): Promise<string[]> {
+    return this.priceRepository.getSymbols();
   }
 
-  // 저장된 모든 심볼 목록 반환 (BaseResponse 형태)
-  getSymbolsWithResponse(): BaseResponse<string[]> {
-    const symbols = this.getSymbols();
-    
+  async getSymbolsWithResponse(): Promise<BaseResponse<string[]>> {
+    const symbols = await this.getSymbols();
     if (symbols.length > 0) {
-      return this.success(
-        symbols,
-        `Retrieved ${symbols.length} symbols`
-      );
+      return this.success(symbols, `Retrieved ${symbols.length} symbols`);
     } else {
       return this.fail('No symbols available');
     }
   }
 
-  // 데이터 만료 여부 확인
-  private isDataExpired(timestamp: number): boolean {
-    return Date.now() - timestamp > this.DATA_VALIDITY_DURATION;
-  }
-
-  // 데이터 유효성 시간 설정
-  setDataValidityDuration(duration: number): void {
-    this.DATA_VALIDITY_DURATION = duration;
-  }
-
-  // 데이터 유효성 시간 설정 (BaseResponse 형태)
-  setDataValidityDurationWithResponse(duration: number): BaseResponse<{ validityDuration: number }> {
-    this.setDataValidityDuration(duration);
-    return this.success(
-      { validityDuration: duration },
-      'Data validity duration updated successfully'
-    );
-  }
-
-  // 현재 데이터 유효성 시간 반환
-  getDataValidityDuration(): number {
-    return this.DATA_VALIDITY_DURATION;
-  }
-
-  // 현재 데이터 유효성 시간 반환 (BaseResponse 형태)
-  getDataValidityDurationWithResponse(): BaseResponse<{ validityDuration: number }> {
-    return this.success(
-      { validityDuration: this.DATA_VALIDITY_DURATION },
-      'Data validity duration retrieved successfully'
-    );
-  }
-
-  // 메모리 사용량 정보 반환
+  // 메모리 정보 (TTL은 설정에서 조회)
   getMemoryInfo(): { priceCount: number; symbols: string[]; validityDuration: number } {
+    const { ttl } = this.configService.getCacheConfig();
+    // 동기 정보 제공을 위해 심볼 수/목록은 즉시값으로 반환
+    // 주의: 상세 데이터는 비동기 메서드 사용 권장
+    const validityDuration = ttl ?? 30_000;
     return {
-      priceCount: this.getPriceCount(),
-      symbols: this.getSymbols(),
-      validityDuration: this.DATA_VALIDITY_DURATION,
+      priceCount: 0, // 정확 값은 비동기 count 사용 권장
+      symbols: [],   // 정확 값은 비동기 getSymbols 사용 권장
+      validityDuration
     };
   }
 
-  // 메모리 사용량 정보 반환 (BaseResponse 형태)
-  getMemoryInfoWithResponse(): BaseResponse<{ priceCount: number; symbols: string[]; validityDuration: number }> {
+  async getMemoryInfoWithResponse(): Promise<BaseResponse<{ priceCount: number; symbols: string[]; validityDuration: number }>> {
+    const { ttl } = this.configService.getCacheConfig();
+    const [count, symbols] = await Promise.all([
+      this.priceRepository.count(),
+      this.priceRepository.getSymbols()
+    ]);
     return this.success(
-      this.getMemoryInfo(),
+      { priceCount: count, symbols, validityDuration: ttl ?? 30_000 },
       'Memory information retrieved successfully'
     );
   }
-} 
+
+  // 유틸: 엔티티 → PriceData 변환
+  private toPriceData(entity: Price): PriceData {
+    return {
+      symbol: entity.symbol,
+      price: entity.price,
+      timestamp: entity.timestamp,
+      volume: entity.volume,
+      changePercent24h: entity.changePercent24h
+    };
+  }
+}
