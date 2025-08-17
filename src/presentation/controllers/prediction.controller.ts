@@ -11,8 +11,8 @@ import { PredictPriceUseCase } from '../../application/use-cases/predict-price.u
 import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 
 /**
- * 가격 예측 관련 API 그룹
- * Swagger UI에서 이 태그로 API들을 그룹화하여 표시합니다.
+ * 가격 예측 모델 API 그룹
+ * AI 기반 암호화폐 가격 예측 및 분석
  */
 @ApiTags('prediction')
 @Controller('prediction')

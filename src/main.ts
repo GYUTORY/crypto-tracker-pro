@@ -25,13 +25,49 @@ async function bootstrap() {
   // Swagger 문서 설정
   const config = new DocumentBuilder()
     .setTitle('Crypto Tracker Pro API')
-    .setDescription('실시간 암호화폐 가격 추적 API')
+    .setDescription(`
+      실시간 암호화폐 가격 추적 및 AI 분석 API
+
+      ## 주요 기능
+      - 실시간 암호화폐 가격 조회 (메모리 캐시 + 바이낸스 API)
+      - AI 기반 기술적 분석 및 가격 예측
+      - WebSocket을 통한 실시간 데이터 스트리밍
+      - 메모리 기반 고성능 캐싱 시스템
+
+      ## API 그룹
+      - **price**: 실시간 가격 조회 API
+      - **binance**: 바이낸스 데이터 직접 조회
+      - **AI Analysis**: AI 기반 분석 및 예측
+      - **prediction**: 가격 예측 모델 API
+      - **tcp**: WebSocket 연결 상태 및 메모리 관리
+      - **health**: 시스템 상태 확인
+
+      ## 사용 예시
+      \`\`\`bash
+      # 실시간 가격 조회
+      GET /price/BTCUSDT
+      
+      # AI 기술적 분석
+      POST /ai/technical-analysis
+      {
+        "symbol": "BTCUSDT"
+      }
+      
+      # 가격 예측
+      GET /prediction/BTCUSDT?timeframes=1h,24h,1w
+      \`\`\`
+    `)
     .setVersion('1.0.0')
-    .addTag('health', '헬스체크 및 기본 정보')
-    .addTag('binance', '바이낸스 가격 데이터 API')
-    .addTag('tcp', 'WebSocket 연결 상태 및 메모리 데이터')
-    .addTag('AI Analysis', 'AI 기반 기술적 분석')
+    .setContact('Crypto Tracker Pro', 'https://github.com/your-repo', 'dev@example.com')
+    .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+    .addTag('price', '실시간 암호화폐 가격 조회 API')
+    .addTag('binance', '바이낸스 가격 데이터 직접 조회')
+    .addTag('AI Analysis', 'AI 기반 기술적 분석 및 예측')
+    .addTag('prediction', '가격 예측 모델 API')
+    .addTag('tcp', 'WebSocket 연결 상태 및 메모리 데이터 관리')
+    .addTag('health', '시스템 상태 확인 및 헬스체크')
     .addServer('http://localhost:3000', '개발 서버')
+    .addServer('https://api.cryptotracker.com', '프로덕션 서버')
     .build();
 
   // SwaggerModule.createDocument() - 앱과 설정으로 문서 생성
@@ -45,13 +81,22 @@ async function bootstrap() {
       filter: true,
       showRequestHeaders: true,
       showCommonExtensions: true,
+      docExpansion: 'list', // 기본적으로 모든 API 그룹을 펼침
+      defaultModelsExpandDepth: 2,
+      defaultModelExpandDepth: 2,
     },
     customSiteTitle: 'Crypto Tracker Pro API Documentation',
     customCss: `
       .swagger-ui .topbar { display: none }
-      .swagger-ui .info .title { color: #2c3e50; font-size: 36px; }
-      .swagger-ui .info .description { font-size: 16px; line-height: 1.6; }
-      .swagger-ui .scheme-container { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+      .swagger-ui .info .title { color: #2c3e50; font-size: 36px; font-weight: 600; }
+      .swagger-ui .info .description { font-size: 16px; line-height: 1.6; color: #34495e; }
+      .swagger-ui .scheme-container { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+      .swagger-ui .opblock-tag { font-size: 18px; font-weight: 600; color: #2c3e50; }
+      .swagger-ui .opblock-summary-description { color: #7f8c8d; }
+      .swagger-ui .response-col_status { font-weight: 600; }
+      .swagger-ui .response-col_description { color: #34495e; }
+      .swagger-ui .model { font-size: 14px; }
+      .swagger-ui .model-title { color: #2c3e50; font-weight: 600; }
     `,
   });
 

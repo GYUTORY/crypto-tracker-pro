@@ -12,8 +12,8 @@ import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 import { PriceResponseDto } from '../../shared/dto/price-response.dto';
 
 /**
- * 가격 관련 API 그룹
- * Swagger UI에서 이 태그로 API들을 그룹화하여 표시합니다.
+ * 실시간 암호화폐 가격 조회 API 그룹
+ * 메모리 캐시와 바이낸스 API를 통한 가격 데이터 조회
  */
 @ApiTags('price')
 @Controller('price')

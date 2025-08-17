@@ -12,6 +12,10 @@ import { PriceStoreService } from '../../tcp/price-store.service';
 import { BaseService, BaseResponse } from '../../shared/base-response';
 import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 
+/**
+ * WebSocket 연결 상태 및 메모리 데이터 관리 API 그룹
+ * 실시간 연결 상태와 메모리 저장소 정보 조회
+ */
 @ApiTags('tcp')
 @Controller('tcp') // 모든 엔드포인트는 /tcp로 시작
 export class TcpController extends BaseService {

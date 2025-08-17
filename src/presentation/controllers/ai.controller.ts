@@ -34,12 +34,8 @@ import { AnalyzeTechnicalSimpleUseCase } from '../../application/use-cases/analy
 import Logger from '../../shared/logger';
 
 /**
- * AI 분석 API 그룹
- * 
- * @ApiTags 데코레이터 설명:
- * - Swagger UI에서 API들을 그룹화하는 데 사용
- * - 'AI Analysis' 그룹으로 분류되어 관리됨
- * - 관련된 API들을 논리적으로 묶어서 문서화
+ * AI 기반 기술적 분석 및 예측 API 그룹
+ * Google Gemini AI를 활용한 암호화폐 기술적 분석
  */
 @ApiTags('AI Analysis')
 @Controller('ai')

@@ -98,27 +98,12 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
+# Test files (개발용)
+test-exchange-rate.js
+test-shibrw-prediction.sh
 
-# next.js build output
-.next
+# Build artifacts
+*.tsbuildinfo
 
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port 
+# Local development files
+.local 

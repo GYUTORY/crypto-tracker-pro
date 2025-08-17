@@ -96,7 +96,14 @@ npm run start:prod
 
 ## API 사용법
 
-### 가격 조회
+### Swagger 문서
+서버 실행 후 다음 URL에서 API 문서를 확인할 수 있습니다:
+- **개발 환경**: http://localhost:3000/api-docs
+- **프로덕션**: https://api.cryptotracker.com/api-docs
+
+### 주요 API 엔드포인트
+
+#### 1. 실시간 가격 조회
 ```bash
 # 기본 조회 (캐시 우선)
 GET /price/BTCUSDT

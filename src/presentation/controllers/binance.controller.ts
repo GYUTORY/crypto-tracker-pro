@@ -13,6 +13,10 @@ import { GetPriceUseCase } from '../../application/use-cases/get-price.use-case'
 import { BaseResponse } from '../../shared/base-response';
 import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 
+/**
+ * 바이낸스 가격 데이터 직접 조회 API 그룹
+ * 바이낸스 API를 통한 실시간 가격 데이터 조회
+ */
 @ApiTags('binance')
 @Controller('binance') // 모든 엔드포인트는 /binance로 시작
 export class BinanceController {
