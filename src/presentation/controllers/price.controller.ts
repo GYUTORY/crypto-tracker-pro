@@ -10,6 +10,7 @@ import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/
 import { GetPriceUseCase } from '../../application/use-cases/get-price.use-case';
 import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 import { PriceResponseDto } from '../../shared/dto/price-response.dto';
+import { BaseService } from '../../shared/base-response';
 
 /**
  * 실시간 암호화폐 가격 조회 API 그룹
@@ -17,10 +18,12 @@ import { PriceResponseDto } from '../../shared/dto/price-response.dto';
  */
 @ApiTags('price')
 @Controller('price')
-export class PriceController {
+export class PriceController extends BaseService {
   constructor(
     private readonly getPriceUseCase: GetPriceUseCase
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * 암호화폐 가격 조회 API
@@ -71,6 +74,6 @@ export class PriceController {
       forceRefresh: forceRefresh === true
     });
 
-    return recordSet;
+    return this.success(recordSet, `${symbol} 가격 조회 완료`);
   }
 } 

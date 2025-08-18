@@ -59,29 +59,15 @@ export class AiController extends BaseService {
   }
 
   /**
-   * AI 기반 기술적 분석 API 엔드포인트
+   * 기술적 분석 API 엔드포인트
    * 
    * @param body - 요청 본문 (symbol 포함)
    * @returns BaseResponseDto - 분석 결과
-   * 
-   * HTTP 메서드: POST
-   * 경로: /ai/technical-analysis
-   * 
-   * 동작 과정:
-   * 1. 요청 로깅
-   * 2. Use Case 실행
-   * 3. 결과 반환
-   * 4. 에러 처리
-   * 
-   * Swagger 문서화:
-   * - @ApiOperation: API 설명 및 요약
-   * - @ApiBody: 요청 본문 스키마 정의
-   * - @ApiResponse: 응답 스키마 정의 (성공/실패 케이스)
    */
   @Post('technical-analysis')
   @ApiOperation({ 
     summary: 'AI 기반 암호화폐 기술적 분석',
-    description: '바이낸스 API를 통해 실시간 가격 데이터를 가져와서 Google Gemini AI로 분석을 수행합니다. 현재 가격과 24시간 변화율을 기반으로 매매 신호와 위험도를 제공합니다.'
+    description: '바이낸스 API를 통해 실시간 가격 데이터를 가져와서 Google Gemini AI로 기술적 분석을 수행합니다. 현재 가격과 24시간 변화율을 기반으로 매매 신호와 위험도를 제공합니다.'
   })
   @ApiBody({ 
     description: '분석할 암호화폐 심볼 정보',
