@@ -99,7 +99,7 @@ export class PricePrediction {
    * @param timeframe 시간대
    * @returns 해당 시간대의 예측 또는 null
    */
-  getPredictionByTimeframe(timeframe: Timeframe): TimeframePrediction | null {
+  getPredictionByTimeframe(timeframe: string): TimeframePrediction | null {
     return this._predictions.find(p => p.timeframe === timeframe) || null;
   }
 
@@ -188,11 +188,21 @@ export class PricePrediction {
     symbol: string,
     currentPrice: string,
     predictions: TimeframePrediction[],
-    supportLevels: string[],
-    resistanceLevels: string[],
-    confidence: number,
-    analysis: PredictionAnalysis
+    supportLevels: string[] = [],
+    resistanceLevels: string[] = [],
+    confidence: number = 50,
+    analysis: Partial<PredictionAnalysis> = {}
   ): PricePrediction {
+    // 기본값으로 analysis 객체 완성
+    const defaultAnalysis: PredictionAnalysis = {
+      marketSentiment: 'neutral',
+      keyFactors: [],
+      riskFactors: [],
+      recommendation: '투자 결정은 신중히 하시기 바랍니다.',
+      disclaimer: '이 예측은 참고용이며, 투자 손실에 대한 책임은 투자자에게 있습니다.',
+      ...analysis
+    };
+
     return new PricePrediction(
       symbol,
       currentPrice,
@@ -201,7 +211,7 @@ export class PricePrediction {
       resistanceLevels,
       confidence,
       Date.now(),
-      analysis
+      defaultAnalysis
     );
   }
 
@@ -253,16 +263,16 @@ export class PricePrediction {
  * 시간대별 예측 정보
  */
 export interface TimeframePrediction {
-  timeframe: Timeframe;           // 시간대 (1h, 4h, 24h, 1w, 1m, 3m)
+  timeframe: string;           // 시간대 (더 유연하게 string으로 변경)
   predictedPrice: string;         // 예측 가격
   confidence: number;             // 해당 시간대 예측 신뢰도 (0-100)
   changePercent: number;          // 현재 대비 변화율 (%)
-  trend: 'bullish' | 'bearish' | 'neutral'; // 추세
+  trend: string; // 추세 (더 유연하게 string으로 변경)
   explanation: string;            // 예측 근거 설명
 }
 
 /**
- * 예측 시간대 타입
+ * 예측 시간대 타입 (기존 호환성을 위해 유지)
  */
 export type Timeframe = '1h' | '4h' | '24h' | '1w' | '1m' | '3m';
 
@@ -270,7 +280,7 @@ export type Timeframe = '1h' | '4h' | '24h' | '1w' | '1m' | '3m';
  * AI 분석 결과
  */
 export interface PredictionAnalysis {
-  marketSentiment: 'bullish' | 'bearish' | 'neutral';  // 시장 심리
+  marketSentiment: string;  // 시장 심리 (더 유연하게 string으로 변경)
   keyFactors: string[];                                 // 주요 영향 요인들
   riskFactors: string[];                                // 위험 요인들
   recommendation: string;                               // 투자 추천
