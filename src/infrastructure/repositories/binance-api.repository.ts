@@ -1,54 +1,24 @@
 /**
  * 바이낸스 API 구현체
  * 
- * 바이낸스 REST API와 WebSocket을 통해 실시간 암호화폐 데이터를 가져옵니다.
- * WebSocket 연결은 서버 시작 시 자동으로 이루어지며, 연결이 끊어지면
- * 자동으로 재연결을 시도합니다. REST API는 WebSocket 데이터가 없거나
- * 만료된 경우의 폴백으로 사용됩니다.
+ * 바이낸스 REST API를 통해 암호화폐 데이터를 가져옵니다.
+ * WebSocket 관련 기능은 BinanceStreamingRepository로 분리됩니다.
  */
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import * as WebSocket from 'ws';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 import { Price } from '../../domain/entities/price.entity';
 import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
+import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
 import { ConfigService } from '../../config/config.service';
 import Logger from '../../shared/logger';
 
-/**
- * 바이낸스 API 구현체
- * 
- * OnModuleInit, OnModuleDestroy를 구현하여 NestJS 생명주기에 맞춰
- * WebSocket 연결을 관리합니다.
- */
 @Injectable()
-export class BinanceApiRepository implements BinanceRepository, OnModuleInit, OnModuleDestroy {
-  private ws: WebSocket;                    // WebSocket 연결 객체
-  private reconnectTimer: NodeJS.Timeout;   // 재연결 타이머
-  private isConnected = false;              // 연결 상태 플래그
-  private readonly baseUrl: string;         // REST API 기본 URL
-  private readonly wsUrl: string;           // WebSocket URL
-  private readonly reconnectDelay = 5000;   // 재연결 대기 시간 (5초)
+export class BinanceApiRepository implements BinanceRepository {
+  private readonly baseUrl: string;
 
   constructor(private readonly configService: ConfigService) {
     const binanceConfig = this.configService.getBinanceConfig();
     this.baseUrl = binanceConfig.baseUrl;
-    this.wsUrl = binanceConfig.wsUrl;
-  }
-
-  /**
-   * 모듈 초기화 시 WebSocket 연결 시작
-   * NestJS 생명주기에 의해 자동으로 호출됩니다.
-   */
-  async onModuleInit(): Promise<void> {
-    await this.connectWebSocket();
-  }
-
-  /**
-   * 모듈 종료 시 WebSocket 연결 정리
-   * NestJS 생명주기에 의해 자동으로 호출됩니다.
-   */
-  async onModuleDestroy(): Promise<void> {
-    await this.disconnectWebSocket();
   }
 
   /**
@@ -78,177 +48,221 @@ export class BinanceApiRepository implements BinanceRepository, OnModuleInit, On
   }
 
   /**
-   * WebSocket 연결 시작
-   * 
-   * Promise를 반환하여 연결 완료를 기다릴 수 있도록 합니다.
-   * 연결 성공 시 자동으로 가격 스트림을 구독합니다.
+   * 심볼별 현재 가격 조회 (문자열 반환)
+   * @param symbol - 조회할 암호화폐 심볼
+   * @returns 현재 가격 (문자열)
    */
-  async connectWebSocket(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      Logger.info(`바이낸스 WebSocket 연결 중: ${this.wsUrl}`);
-
-      this.ws = new WebSocket(this.wsUrl);
-
-      // 연결 성공 시
-      this.ws.on('open', () => {
-        Logger.info('바이낸스 WebSocket 연결 완료');
-        this.isConnected = true;
-        this.subscribeToPriceStreams(); // 연결 후 즉시 스트림 구독
-        resolve();
+  async getSymbolPrice(symbol: string): Promise<string> {
+    try {
+      Logger.info(`${symbol} 가격 조회 시작`);
+      const response = await axios.get(`${this.baseUrl}/api/v3/ticker/price`, {
+        params: { symbol: symbol.toUpperCase() }
       });
-
-      // 메시지 수신 시
-      this.ws.on('message', (data: WebSocket.Data) => {
-        this.handleWebSocketMessage(data);
-      });
-
-      // 연결 종료 시
-      this.ws.on('close', () => {
-        Logger.info('바이낸스 WebSocket 연결 종료');
-        this.isConnected = false;
-        this.scheduleReconnect(); // 자동 재연결 스케줄링
-      });
-
-      // 에러 발생 시
-      this.ws.on('error', (error) => {
-        Logger.error('바이낸스 WebSocket 오류:', null, { error: error.message });
-        this.isConnected = false;
-        reject(error);
-      });
-    });
-  }
-
-  /**
-   * WebSocket 연결 종료
-   * 
-   * 재연결 타이머를 정리하고 WebSocket을 안전하게 닫습니다.
-   */
-  async disconnectWebSocket(): Promise<void> {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
+      
+      Logger.info(`${symbol} 가격 조회 성공: ${response.data.price}`);
+      return response.data.price;
+    } catch (error) {
+      Logger.error(`${symbol} 가격 조회 실패: ${error.message} - Status: ${error.response?.status}, Data: ${JSON.stringify(error.response?.data)}`);
+      throw new Error(`${symbol}의 현재 가격을 가져올 수 없습니다.`);
     }
+  }
 
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.close();
+  /**
+   * 거래 가능한 심볼 목록 조회
+   * @returns 거래 가능한 심볼 목록
+   */
+  async getTradingSymbols(): Promise<string[]> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/api/v3/exchangeInfo`);
+      const symbols = response.data.symbols
+        .filter((symbol: any) => symbol.status === 'TRADING')
+        .map((symbol: any) => symbol.symbol);
+      
+      Logger.info(`바이낸스 거래 가능 심볼 ${symbols.length}개 조회 완료`);
+      return symbols;
+    } catch (error) {
+      Logger.error(`바이낸스 심볼 목록 조회 실패: ${error.message}`);
+      throw new Error('거래 가능한 심볼 목록을 가져올 수 없습니다.');
     }
-
-    this.isConnected = false;
-    Logger.info('바이낸스 WebSocket 연결 해제');
   }
 
   /**
-   * WebSocket 연결 상태 확인
+   * 특정 심볼의 기술적 지표 데이터 조회
+   * @param symbol - 조회할 암호화폐 심볼
+   * @returns 기술적 지표 데이터
    */
-  isWebSocketConnected(): boolean {
-    return this.isConnected;
+  async getTechnicalData(symbol: string): Promise<TechnicalData> {
+    try {
+      // 24시간 통계 데이터 조회
+      const tickerResponse = await axios.get(`${this.baseUrl}/api/v3/ticker/24hr`, {
+        params: { symbol: symbol.toUpperCase() }
+      });
+      
+      const tickerData = tickerResponse.data;
+      
+      // 최근 가격 데이터 조회 (RSI, MACD 계산용)
+      const klinesResponse = await axios.get(`${this.baseUrl}/api/v3/klines`, {
+        params: {
+          symbol: symbol.toUpperCase(),
+          interval: '1d',
+          limit: 50
+        }
+      });
+      
+      const klines = klinesResponse.data;
+      
+      // 기술적 지표 계산
+      const technicalData = this.calculateTechnicalIndicators(klines, tickerData);
+      
+      Logger.info(`${symbol} 기술적 지표 데이터 조회 완료`);
+      return technicalData;
+    } catch (error) {
+      Logger.error(`${symbol} 기술적 지표 데이터 조회 실패: ${error.message}`);
+      throw new Error(`${symbol}의 기술적 지표 데이터를 가져올 수 없습니다.`);
+    }
   }
 
   /**
-   * 수동 WebSocket 재연결
-   * 
-   * API를 통해 수동으로 재연결을 요청할 때 사용됩니다.
+   * 기술적 지표 계산
+   * @param klines - 캔들스틱 데이터
+   * @param tickerData - 24시간 통계 데이터
+   * @returns 계산된 기술적 지표
    */
-  async reconnectWebSocket(): Promise<void> {
-    Logger.info('수동 재연결 요청');
-    await this.disconnectWebSocket();
-    await this.connectWebSocket();
-  }
-
-  /**
-   * 가격 스트림 구독
-   * 
-   * 바이낸스 WebSocket API에 구독 메시지를 전송하여
-   * 실시간 가격 데이터를 받기 시작합니다.
-   */
-  private subscribeToPriceStreams(): void {
-    const subscribeMessage = {
-      method: 'SUBSCRIBE',
-      params: [
-        'btckrw@ticker',   // 비트코인 실시간 티커 (KRW)
-        'ethkrw@ticker',   // 이더리움 실시간 티커 (KRW)
-        'btckrw@trade',    // 비트코인 실시간 거래 (KRW)
-        'ethkrw@trade'     // 이더리움 실시간 거래 (KRW)
-      ],
-      id: 1
+  private calculateTechnicalIndicators(klines: any[], tickerData: any): TechnicalData {
+    const prices = klines.map((kline: any) => parseFloat(kline[4])); // 종가
+    const volumes = klines.map((kline: any) => parseFloat(kline[5])); // 거래량
+    
+    // RSI 계산 (14일)
+    const rsi = this.calculateRSI(prices, 14);
+    
+    // MACD 계산
+    const { macd, macdSignal } = this.calculateMACD(prices);
+    
+    // 볼린저 밴드 계산 (20일)
+    const { upper: bollingerUpper, lower: bollingerLower } = this.calculateBollingerBands(prices, 20);
+    
+    // 이동평균 계산
+    const ma20 = this.calculateSMA(prices, 20);
+    const ma50 = this.calculateSMA(prices, 50);
+    
+    // 거래량 변화율
+    const volumeChange = this.calculateVolumeChange(volumes);
+    
+    return {
+      rsi,
+      macd,
+      macdSignal,
+      bollingerUpper: bollingerUpper.toFixed(8),
+      bollingerLower: bollingerLower.toFixed(8),
+      ma20: ma20.toFixed(8),
+      ma50: ma50.toFixed(8),
+      volume: tickerData.volume,
+      volumeChange: volumeChange.toFixed(2)
     };
-
-    this.ws.send(JSON.stringify(subscribeMessage));
-    Logger.info('바이낸스 가격 스트림 구독 완료 (KRW)');
   }
 
   /**
-   * WebSocket 메시지 처리
-   * 
-   * 바이낸스로부터 받은 실시간 데이터를 파싱하고 처리합니다.
-   * 구독 확인 메시지와 실제 가격 데이터를 구분하여 처리합니다.
+   * RSI 계산
    */
-  private handleWebSocketMessage(data: WebSocket.Data): void {
-    try {
-      const message = data.toString('utf8').trim();
-      
-      if (!message) return;
-
-      const binanceData = JSON.parse(message);
-      
-      // 구독 확인 메시지 처리
-      if (binanceData.result !== undefined) {
-        Logger.info('구독 확인됨');
-        return;
-      }
-
-      // 실제 가격 데이터 처리
-      if (binanceData.data) {
-        this.processPriceData(binanceData);
-      }
-    } catch (error) {
-      Logger.error('WebSocket 메시지 처리 오류:', null, { error: error.message });
+  private calculateRSI(prices: number[], period: number): number {
+    if (prices.length < period + 1) return 50; // 기본값
+    
+    const gains = [];
+    const losses = [];
+    
+    for (let i = 1; i < prices.length; i++) {
+      const change = prices[i] - prices[i - 1];
+      gains.push(change > 0 ? change : 0);
+      losses.push(change < 0 ? Math.abs(change) : 0);
     }
+    
+    const avgGain = gains.slice(-period).reduce((sum, gain) => sum + gain, 0) / period;
+    const avgLoss = losses.slice(-period).reduce((sum, loss) => sum + loss, 0) / period;
+    
+    if (avgLoss === 0) return 100;
+    
+    const rs = avgGain / avgLoss;
+    return 100 - (100 / (1 + rs));
   }
 
   /**
-   * 가격 데이터 처리
-   * 
-   * WebSocket으로 받은 가격 데이터를 도메인 엔티티로 변환합니다.
-   * 현재는 티커 데이터만 처리하고 있습니다.
+   * MACD 계산
    */
-  private processPriceData(binanceData: any): void {
-    try {
-      const data = binanceData.data;
-      const stream = binanceData.stream;
-
-      // 티커 스트림 데이터 처리
-      if (stream && stream.includes('@ticker')) {
-        const price = Price.create(
-          data.s,  // 심볼
-          data.c,  // 현재 가격
-          data.v,  // 거래량
-          data.P   // 24시간 변동률
-        );
-
-        Logger.info(`가격 업데이트: ${price.symbol} = ${price.price}`);
-      }
-    } catch (error) {
-      Logger.error('가격 데이터 처리 오류:', null, { error: error.message });
-    }
+  private calculateMACD(prices: number[]): { macd: number; macdSignal: number } {
+    if (prices.length < 26) return { macd: 0, macdSignal: 0 };
+    
+    const ema12 = this.calculateEMA(prices, 12);
+    const ema26 = this.calculateEMA(prices, 26);
+    const macd = ema12 - ema26;
+    
+    // MACD 시그널 라인 (9일 EMA)
+    const macdValues = prices.map((_, i) => {
+      if (i < 25) return 0;
+      const ema12_i = this.calculateEMA(prices.slice(0, i + 1), 12);
+      const ema26_i = this.calculateEMA(prices.slice(0, i + 1), 26);
+      return ema12_i - ema26_i;
+    });
+    
+    const macdSignal = this.calculateEMA(macdValues, 9);
+    
+    return { macd, macdSignal };
   }
 
   /**
-   * 자동 재연결 스케줄링
-   * 
-   * 연결이 끊어지면 일정 시간 후에 자동으로 재연결을 시도합니다.
-   * 재연결 실패 시 다시 스케줄링하여 무한 재시도를 방지합니다.
+   * 볼린저 밴드 계산
    */
-  private scheduleReconnect(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-    }
+  private calculateBollingerBands(prices: number[], period: number): { upper: number; lower: number } {
+    if (prices.length < period) return { upper: prices[prices.length - 1], lower: prices[prices.length - 1] };
+    
+    const recentPrices = prices.slice(-period);
+    const sma = recentPrices.reduce((sum, price) => sum + price, 0) / period;
+    
+    const variance = recentPrices.reduce((sum, price) => sum + Math.pow(price - sma, 2), 0) / period;
+    const standardDeviation = Math.sqrt(variance);
+    
+    return {
+      upper: sma + (2 * standardDeviation),
+      lower: sma - (2 * standardDeviation)
+    };
+  }
 
-    this.reconnectTimer = setTimeout(() => {
-      Logger.info('바이낸스 WebSocket 재연결 시도 중...');
-      this.connectWebSocket().catch((error) => {
-        Logger.error('재연결 실패:', null, { error: error.message });
-        this.scheduleReconnect(); // 재연결 실패 시 다시 스케줄링
-      });
-    }, this.reconnectDelay);
+  /**
+   * 단순 이동평균 계산
+   */
+  private calculateSMA(prices: number[], period: number): number {
+    if (prices.length < period) return prices[prices.length - 1];
+    
+    const recentPrices = prices.slice(-period);
+    return recentPrices.reduce((sum, price) => sum + price, 0) / period;
+  }
+
+  /**
+   * 지수 이동평균 계산
+   */
+  private calculateEMA(prices: number[], period: number): number {
+    if (prices.length < period) return prices[prices.length - 1];
+    
+    const multiplier = 2 / (period + 1);
+    let ema = prices[0];
+    
+    for (let i = 1; i < prices.length; i++) {
+      ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
+    }
+    
+    return ema;
+  }
+
+  /**
+   * 거래량 변화율 계산
+   */
+  private calculateVolumeChange(volumes: number[]): number {
+    if (volumes.length < 2) return 0;
+    
+    const currentVolume = volumes[volumes.length - 1];
+    const previousVolume = volumes[volumes.length - 2];
+    
+    if (previousVolume === 0) return 0;
+    
+    return ((currentVolume - previousVolume) / previousVolume) * 100;
   }
 } 

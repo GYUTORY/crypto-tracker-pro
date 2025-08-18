@@ -24,12 +24,13 @@
  * );
  * ```
  */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { TechnicalAnalysis, TechnicalData } from '../../domain/entities/technical-analysis.entity';
-import { PricePrediction, TimeframePrediction, PredictionAnalysis } from '../../domain/entities/price-prediction.entity';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
 import { ConfigService } from '../../config/config.service';
+import { AiRepository } from '../../domain/repositories/ai-repository.interface';
+import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
+import { PricePrediction } from '../../domain/entities/price-prediction.entity';
+import { TechnicalAnalysisSchema, PricePredictionSchema, TechnicalAnalysisResponse, PricePredictionResponse } from '../../domain/schemas/ai.schemas';
 import Logger from '../../shared/logger';
 
 @Injectable()
@@ -87,19 +88,14 @@ export class GoogleAiRepository implements AiRepository {
     symbol: string,
     price: string,
     technicalData: TechnicalData
-  ): Promise<TechnicalAnalysis> {
+  ): Promise<TechnicalAnalysisResponse> {
     try {
       // AI 분석 수행
       const analysis = await this.performAIAnalysis(symbol, price, technicalData);
       
       // 분석 결과를 TechnicalAnalysis 도메인 엔티티로 변환
       // Domain Layer의 create 메서드를 사용하여 엔티티 생성
-      return TechnicalAnalysis.create(
-        symbol,
-        price,
-        technicalData,
-        analysis
-      );
+      return analysis;
     } catch (error) {
       // 오류 발생 시 로그 및 에러 메시지 반환
       Logger.error(`AI 분석 오류: ${error.message}`);
@@ -140,15 +136,15 @@ export class GoogleAiRepository implements AiRepository {
         symbol,
         currentPrice,
         prediction.predictions,
-        prediction.supportLevels,
-        prediction.resistanceLevels,
-        prediction.confidence,
-        prediction.analysis
+        prediction.supportLevels || [],
+        prediction.resistanceLevels || [],
+        prediction.confidence || 50,
+        prediction.analysis || {}
       );
     } catch (error) {
-      // 오류 발생 시 로그 및 에러 메시지 반환
-      Logger.error(`AI 가격 예측 오류: ${error.message}`);
-      throw new Error('AI 가격 예측 중 오류가 발생했습니다.');
+      // 예상치 못한 오류 발생 시에만 에러를 던짐
+      Logger.error(`AI 가격 예측 예상치 못한 오류: ${error.message}`);
+      throw new Error('AI 가격 예측 중 예상치 못한 오류가 발생했습니다.');
     }
   }
 
@@ -166,32 +162,19 @@ export class GoogleAiRepository implements AiRepository {
   }
 
   /**
-   * 실제 AI 분석을 수행하는 private 메서드
+   * 기술적 분석 수행
    * 
    * @param symbol - 분석할 암호화폐 심볼
    * @param price - 현재 가격
    * @param technicalData - 기술적 지표 데이터
-   * @returns AI 분석 결과 (any 타입 - JSON 파싱 결과)
-   * 
-   * 동작 과정:
-   * 1. AI에게 보낼 프롬프트 생성
-   * 2. Google Gemini AI API 호출
-   * 3. 응답 받기 및 JSON 파싱
-   * 4. 결과 반환
-   * 
-   * 주의사항:
-   * - Gemini가 ```json\n...\n``` 형식으로 응답할 수 있어서 이를 처리
-   * - JSON 파싱 실패 시 적절한 에러 처리
-   * - API 호출 실패 시 적절한 에러 처리
+   * @returns 분석 결과
    */
   private async performAIAnalysis(
     symbol: string,
     price: string,
     technicalData: TechnicalData
-  ): Promise<any> {
-    // AI에게 보낼 프롬프트 생성
-    // 이 프롬프트는 AI가 어떤 역할을 하고, 어떤 형식으로 응답해야 하는지 정의
-    // 기술적 지표들의 의미와 해석 방법도 함께 제공
+  ): Promise<TechnicalAnalysisResponse> {
+    // 분석 프롬프트 생성
     const prompt = `
 당신은 암호화폐 투자 초보자를 위한 친근한 투자 상담사입니다. 
 다음 기술적 지표를 분석해서 JSON 형식으로만 응답해주세요:
@@ -235,71 +218,55 @@ export class GoogleAiRepository implements AiRepository {
 }`;
 
     try {
-      // Google Gemini AI API 호출 과정
-      Logger.info('Google Gemini AI 호출 중...');
-      
-      // Gemini 모델 생성 (gemini-1.5-pro 모델 사용)
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-      
-      // AI에게 프롬프트 전송하고 응답 생성
+      // 설정에서 모델명 가져오기
+      const googleAIConfig = this.configService.getGoogleAIConfig();
+      const model = this.genAI.getGenerativeModel({ model: googleAIConfig.model });
       const result = await model.generateContent(prompt);
-      
-      // 응답에서 텍스트 추출
       const response = await result.response;
       const text = response.text();
-      Logger.info(`AI 응답 수신: ${text}`);
 
-      // JSON 파싱 과정
-      // Gemini가 ```json\n...\n``` 형식으로 반환할 수 있으므로 처리
-      // 예: ```json\n{"key": "value"}\n``` → {"key": "value"}
+      // JSON 파싱 (마크다운 코드 블록 제거)
       let jsonText = text.trim();
-      
-      // 시작 부분에 ```json\n이 있으면 제거
       if (jsonText.startsWith('```json\n')) {
         jsonText = jsonText.substring(7);
       }
-      
-      // 끝 부분에 \n```이 있으면 제거
       if (jsonText.endsWith('\n```')) {
         jsonText = jsonText.substring(0, jsonText.length - 4);
       }
       
-      // JSON 문자열을 JavaScript 객체로 변환
-      const analysis = JSON.parse(jsonText);
-      Logger.info('Google Gemini AI 분석 완료');
-      return analysis;
+      const rawAnalysis = JSON.parse(jsonText);
+      
+      // Zod 스키마로 응답 검증
+      try {
+        const validatedAnalysis = TechnicalAnalysisSchema.parse(rawAnalysis);
+        return validatedAnalysis;
+      } catch (validationError) {
+        Logger.error('AI 응답 스키마 검증 실패:', null, { 
+          error: validationError.message,
+          rawResponse: rawAnalysis 
+        });
+        throw new Error('AI 응답 형식이 올바르지 않습니다.');
+      }
     } catch (error) {
-      // Google Gemini API 호출 실패 시 로그 및 에러 처리
-      Logger.error(`Google Gemini API 실패: ${error.message}`);
-      throw new Error('Google Gemini API 호출에 실패했습니다.');
+      Logger.error(`Gemini API 호출 실패: ${error.message}`);
+      throw new Error('기술적 분석 수행에 실패했습니다.');
     }
   }
 
   /**
-   * 실제 AI 가격 예측을 수행하는 private 메서드
+   * 가격 예측 수행
    * 
    * @param symbol - 예측할 암호화폐 심볼
    * @param currentPrice - 현재 가격
    * @param technicalData - 기술적 지표 데이터
-   * @returns AI 예측 결과 (any 타입 - JSON 파싱 결과)
-   * 
-   * 동작 과정:
-   * 1. AI에게 보낼 예측 프롬프트 생성
-   * 2. Google Gemini AI API 호출
-   * 3. 응답 받기 및 JSON 파싱
-   * 4. 결과 반환
-   * 
-   * 주의사항:
-   * - Gemini가 ```json\n...\n``` 형식으로 응답할 수 있어서 이를 처리
-   * - JSON 파싱 실패 시 적절한 에러 처리
-   * - API 호출 실패 시 적절한 에러 처리
+   * @returns 예측 결과
    */
   private async performPricePrediction(
     symbol: string,
     currentPrice: string,
     technicalData: TechnicalData
-  ): Promise<any> {
-    // AI에게 보낼 예측 프롬프트 생성
+  ): Promise<PricePredictionResponse> {
+    // 예측 프롬프트 생성
     const prompt = `
 당신은 암호화폐 투자 전문가입니다. 
 다음 기술적 지표를 기반으로 ${symbol}의 미래 가격을 예측해주세요:
@@ -313,64 +280,40 @@ export class GoogleAiRepository implements AiRepository {
 - 50일 평균가: ${technicalData.ma50}${symbol.endsWith('KRW') ? '원' : 'USDT'}
 - 거래량: ${technicalData.volume} (전일 대비 ${technicalData.volumeChange}% 변화)
 
-다음 JSON 형식으로 가격 예측을 제공해주세요:
+다음 JSON 형식으로 가격 예측을 제공해주세요. 반드시 완전한 JSON을 제공하세요:
 
 {
   "predictions": [
     {
       "timeframe": "1h",
       "predictedPrice": "가격",
-      "confidence": 0-100,
-      "changePercent": -10.5,
-      "trend": "bullish|bearish|neutral",
+      "confidence": 60,
+      "changePercent": 0.1,
+      "trend": "neutral",
       "explanation": "1시간 예측 근거"
     },
     {
       "timeframe": "4h",
       "predictedPrice": "가격",
-      "confidence": 0-100,
-      "changePercent": -5.2,
-      "trend": "bullish|bearish|neutral",
+      "confidence": 65,
+      "changePercent": 0.8,
+      "trend": "bullish",
       "explanation": "4시간 예측 근거"
     },
     {
       "timeframe": "24h",
       "predictedPrice": "가격",
-      "confidence": 0-100,
+      "confidence": 70,
       "changePercent": 2.1,
-      "trend": "bullish|bearish|neutral",
+      "trend": "bullish",
       "explanation": "24시간 예측 근거"
-    },
-    {
-      "timeframe": "1w",
-      "predictedPrice": "가격",
-      "confidence": 0-100,
-      "changePercent": 8.5,
-      "trend": "bullish|bearish|neutral",
-      "explanation": "1주 예측 근거"
-    },
-    {
-      "timeframe": "1m",
-      "predictedPrice": "가격",
-      "confidence": 0-100,
-      "changePercent": 15.2,
-      "trend": "bullish|bearish|neutral",
-      "explanation": "1개월 예측 근거"
-    },
-    {
-      "timeframe": "3m",
-      "predictedPrice": "가격",
-      "confidence": 0-100,
-      "changePercent": 25.8,
-      "trend": "bullish|bearish|neutral",
-      "explanation": "3개월 예측 근거"
     }
   ],
-  "supportLevels": ["지지선1", "지지선2", "지지선3"],
-  "resistanceLevels": ["저항선1", "저항선2", "저항선3"],
-  "confidence": 0-100,
+  "supportLevels": ["지지선1", "지지선2"],
+  "resistanceLevels": ["저항선1", "저항선2"],
+  "confidence": 65,
   "analysis": {
-    "marketSentiment": "bullish|bearish|neutral",
+    "marketSentiment": "bullish",
     "keyFactors": ["주요 요인1", "주요 요인2"],
     "riskFactors": ["위험 요인1", "위험 요인2"],
     "recommendation": "투자 추천",
@@ -379,41 +322,152 @@ export class GoogleAiRepository implements AiRepository {
 }`;
 
     try {
-      // Google Gemini AI API 호출 과정
-      Logger.info('Google Gemini AI 가격 예측 호출 중...');
-      
-      // Gemini 모델 생성 (gemini-1.5-pro 모델 사용)
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-      
-      // AI에게 프롬프트 전송하고 응답 생성
+      // 설정에서 모델명 가져오기
+      const googleAIConfig = this.configService.getGoogleAIConfig();
+      const model = this.genAI.getGenerativeModel({ model: googleAIConfig.model });
       const result = await model.generateContent(prompt);
-      
-      // 응답에서 텍스트 추출
       const response = await result.response;
       const text = response.text();
-      Logger.info(`AI 예측 응답 수신: ${text}`);
 
-      // JSON 파싱 과정
+      // 디버깅을 위해 원본 응답 로깅
+      Logger.debug(`AI 원본 응답 (${symbol}):`, null, { rawResponse: text });
+
+      // JSON 파싱 (마크다운 코드 블록 제거)
       let jsonText = text.trim();
-      
-      // 시작 부분에 ```json\n이 있으면 제거
       if (jsonText.startsWith('```json\n')) {
         jsonText = jsonText.substring(7);
       }
-      
-      // 끝 부분에 \n```이 있으면 제거
       if (jsonText.endsWith('\n```')) {
         jsonText = jsonText.substring(0, jsonText.length - 4);
       }
       
-      // JSON 문자열을 JavaScript 객체로 변환
-      const prediction = JSON.parse(jsonText);
-      Logger.info('Google Gemini AI 가격 예측 완료');
-      return prediction;
+      // JSON 파싱 시도
+      let rawPrediction;
+      try {
+        rawPrediction = JSON.parse(jsonText);
+      } catch (parseError) {
+        Logger.error(`JSON 파싱 실패 (${symbol}):`, null, { 
+          error: parseError.message,
+          jsonText: jsonText.substring(0, 1000) + '...' // 처음 1000자만 로깅
+        });
+        
+        // JSON 복구 시도
+        const recoveredJson = this.tryToRecoverJson(jsonText);
+        if (recoveredJson) {
+          try {
+            rawPrediction = JSON.parse(recoveredJson);
+            Logger.info(`JSON 복구 성공 (${symbol})`);
+          } catch (recoveryError) {
+            Logger.error(`JSON 복구 실패 (${symbol}):`, null, { error: recoveryError.message });
+            throw new Error(`JSON 파싱 및 복구 실패: ${parseError.message}`);
+          }
+        } else {
+          throw new Error(`JSON 파싱 오류: ${parseError.message}`);
+        }
+      }
+      
+      // Zod 스키마로 응답 검증
+      try {
+        const validatedPrediction = PricePredictionSchema.parse(rawPrediction);
+        return validatedPrediction;
+      } catch (validationError) {
+        Logger.error('AI 예측 응답 스키마 검증 실패:', null, { 
+          error: validationError.message,
+          rawResponse: rawPrediction 
+        });
+        
+        // 검증 실패 시 기본값 반환
+        Logger.warn(`AI 응답 검증 실패로 기본값 사용 (${symbol})`);
+        return this.getDefaultPricePrediction(symbol, currentPrice);
+      }
     } catch (error) {
-      // Google Gemini API 호출 실패 시 로그 및 에러 처리
-      Logger.error(`Google Gemini 가격 예측 API 실패: ${error.message}`);
-      throw new Error('Google Gemini 가격 예측 API 호출에 실패했습니다.');
+      Logger.error(`Gemini 가격 예측 실패: ${error.message}`);
+      
+      // 모든 파싱 실패 시 기본값 반환
+      Logger.warn(`AI 예측 실패로 기본값 사용 (${symbol})`);
+      return this.getDefaultPricePrediction(symbol, currentPrice);
+    }
+  }
+
+  /**
+   * 기본 가격 예측 반환 (AI 실패 시 fallback)
+   */
+  private getDefaultPricePrediction(symbol: string, currentPrice: string): PricePredictionResponse {
+    const currentPriceNum = parseFloat(currentPrice);
+    
+    return {
+      predictions: [
+        {
+          timeframe: '1h',
+          predictedPrice: (currentPriceNum * 1.001).toFixed(8),
+          confidence: 50,
+          changePercent: 0.1,
+          trend: 'neutral',
+          explanation: '기본 예측: 현재 가격 유지 추세'
+        },
+        {
+          timeframe: '4h',
+          predictedPrice: (currentPriceNum * 1.002).toFixed(8),
+          confidence: 55,
+          changePercent: 0.2,
+          trend: 'neutral',
+          explanation: '기본 예측: 소폭 상승 가능성'
+        },
+        {
+          timeframe: '24h',
+          predictedPrice: (currentPriceNum * 1.005).toFixed(8),
+          confidence: 60,
+          changePercent: 0.5,
+          trend: 'bullish',
+          explanation: '기본 예측: 단기 상승 추세'
+        }
+      ],
+      supportLevels: [(currentPriceNum * 0.98).toFixed(8)],
+      resistanceLevels: [(currentPriceNum * 1.02).toFixed(8)],
+      confidence: 55,
+      analysis: {
+        marketSentiment: 'neutral',
+        keyFactors: ['기본 기술적 분석'],
+        riskFactors: ['AI 분석 실패로 인한 제한적 정보'],
+        recommendation: 'AI 분석이 일시적으로 실패했습니다. 신중한 투자 결정을 권장합니다.',
+        disclaimer: '이 예측은 기본값이며, 실제 투자 결정 시 추가 분석이 필요합니다.'
+      }
+    };
+  }
+
+  /**
+   * 불완전한 JSON을 복구하는 메서드
+   */
+  private tryToRecoverJson(jsonText: string): string | null {
+    try {
+      // 중괄호 개수 확인
+      const openBraces = (jsonText.match(/\{/g) || []).length;
+      const closeBraces = (jsonText.match(/\}/g) || []).length;
+      
+      // 대괄호 개수 확인
+      const openBrackets = (jsonText.match(/\[/g) || []).length;
+      const closeBrackets = (jsonText.match(/\]/g) || []).length;
+      
+      let recoveredJson = jsonText;
+      
+      // 중괄호가 부족하면 추가
+      for (let i = 0; i < openBraces - closeBraces; i++) {
+        recoveredJson += '}';
+      }
+      
+      // 대괄호가 부족하면 추가
+      for (let i = 0; i < openBrackets - closeBrackets; i++) {
+        recoveredJson += ']';
+      }
+      
+      // 마지막에 쉼표가 있으면 제거
+      recoveredJson = recoveredJson.replace(/,\s*([}\]])/g, '$1');
+      
+      // 테스트 파싱
+      JSON.parse(recoveredJson);
+      return recoveredJson;
+    } catch (error) {
+      return null;
     }
   }
 } 
