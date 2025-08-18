@@ -29,6 +29,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { BaseResponse, BaseService } from '../../shared/base-response';
 import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
 import { AiRepository } from '../../domain/repositories/ai-repository.interface';
+import { TechnicalAnalysisResponse } from '../../domain/schemas/ai.schemas';
 import Logger from '../../shared/logger';
 
 /**
@@ -68,32 +69,7 @@ export interface AnalyzeTechnicalSimpleRequest {
 export interface AnalyzeTechnicalSimpleResponse {
   symbol: string;
   price: string;
-  analysis: {
-    rsi: {
-      value: number;
-      signal: 'buy' | 'sell' | 'neutral';
-      explanation: string;
-    };
-    macd: {
-      value: number;
-      signal: 'buy' | 'sell' | 'neutral';
-      explanation: string;
-    };
-    bollinger: {
-      position: 'upper' | 'middle' | 'lower';
-      signal: 'buy' | 'sell' | 'neutral';
-      explanation: string;
-    };
-    movingAverages: {
-      signal: 'buy' | 'sell' | 'neutral';
-      explanation: string;
-    };
-    overallSignal: 'buy' | 'sell' | 'neutral';
-    confidence: number;
-    simpleAdvice: string;
-    riskLevel: 'low' | 'medium' | 'high';
-    riskExplanation: string;
-  };
+  analysis: TechnicalAnalysisResponse;
 }
 
 /**
@@ -193,7 +169,7 @@ export class AnalyzeTechnicalSimpleUseCase extends BaseService {
       return this.success({
         symbol: upperSymbol,
         price: priceData.price,
-        analysis: analysis.analysis // AI 분석 결과
+        analysis: analysis // AI 분석 결과 (직접 사용)
       }, `${upperSymbol} 기술적 분석 완료`);
 
     } catch (error) {

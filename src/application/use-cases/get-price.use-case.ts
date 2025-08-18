@@ -37,7 +37,7 @@ export interface GetPriceResponse {
  * 캐시 전략과 폴백 메커니즘을 구현합니다.
  */
 @Injectable()
-export class GetPriceUseCase extends BaseService {
+export class GetPriceUseCase {
   // 데이터 유효 기간 (30초) - 이 시간이 지나면 데이터를 만료된 것으로 간주
   private readonly DATA_VALIDITY_DURATION = 30 * 1000;
   
@@ -49,9 +49,7 @@ export class GetPriceUseCase extends BaseService {
     private readonly priceRepository: PriceRepository,
     @Inject('BinanceRepository')
     private readonly binanceRepository: BinanceRepository
-  ) {
-    super();
-  }
+  ) {}
 
   /**
    * 가격 조회 실행
@@ -62,7 +60,7 @@ export class GetPriceUseCase extends BaseService {
    * 4. 메모리에 없거나 만료된 경우 API에서 조회
    * 5. API에서 가져온 데이터를 메모리에 저장 후 반환
    */
-  async execute(request: GetPriceRequest): Promise<BaseResponse<GetPriceResponse>> {
+  async execute(request: GetPriceRequest): Promise<GetPriceResponse> {
     try {
       const { symbol, forceRefresh = false } = request;
       const upperSymbol = symbol.toUpperCase(); // 심볼을 대문자로 정규화
@@ -81,12 +79,12 @@ export class GetPriceUseCase extends BaseService {
             this.refreshPriceInBackground(upperSymbol);
           }
 
-          return this.success({
+          return {
             symbol: memoryPrice.symbol,
             price: memoryPrice.price,
             source: 'memory' as const,
             age
-          }, `메모리에서 ${upperSymbol} 가격 조회 완료`);
+          };
         }
       }
 
@@ -97,15 +95,15 @@ export class GetPriceUseCase extends BaseService {
       // API에서 가져온 데이터를 메모리에 저장 (다음 요청을 위해)
       await this.priceRepository.save(apiPrice);
 
-      return this.success({
+      return {
         symbol: apiPrice.symbol,
         price: apiPrice.price,
         source: 'api' as const
-      }, `API에서 ${upperSymbol} 가격 조회 완료`);
+      };
 
     } catch (error) {
       Logger.error(`가격 조회 중 오류: ${error.message}`);
-      return this.fail(`${request.symbol} 가격 조회 실패`);
+      throw new Error(`${request.symbol} 가격 조회 실패`);
     }
   }
 

@@ -10,9 +10,9 @@ import { PricePrediction, TimeframePrediction } from '../../domain/entities/pric
 import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
 import { AiRepository } from '../../domain/repositories/ai-repository.interface';
 import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
+import { ExchangeRateRepository } from '../../domain/repositories/exchange-rate-repository.interface';
 import { BaseResponse, BaseService } from '../../shared/base-response';
 import Logger from '../../shared/logger';
-import axios from 'axios';
 
 /**
  * 가격 예측 요청 데이터
@@ -34,7 +34,7 @@ export interface PredictPriceResponse {
   resistanceLevels: string[];        // 저항선들
   confidence: number;                // 전체 예측 신뢰도
   analysis: {
-    marketSentiment: 'bullish' | 'bearish' | 'neutral';
+    marketSentiment: string; // 더 유연하게 string으로 변경
     keyFactors: string[];
     riskFactors: string[];
     recommendation: string;
@@ -50,7 +50,7 @@ export interface PredictPriceResponse {
  * 캐시 전략과 AI 예측 메커니즘을 구현합니다.
  */
 @Injectable()
-export class PredictPriceUseCase extends BaseService {
+export class PredictPriceUseCase {
   // 예측 데이터 유효 기간 (1시간) - 예측은 기술적 분석보다 더 오래 유효
   private readonly PREDICTION_VALIDITY_DURATION = 60 * 60 * 1000;
   
@@ -60,14 +60,17 @@ export class PredictPriceUseCase extends BaseService {
   // 기본 예측 시간대들
   private readonly DEFAULT_TIMEFRAMES = ['1h', '4h', '24h', '1w', '1m', '3m'];
 
+  // 메모리 캐시 저장소
+  private readonly predictionCache: Map<string, { prediction: PricePrediction; timestamp: number }> = new Map();
+
   constructor(
     @Inject('AiRepository')
     private readonly aiRepository: AiRepository,
     @Inject('BinanceRepository')
-    private readonly binanceRepository: BinanceRepository
-  ) {
-    super();
-  }
+    private readonly binanceRepository: BinanceRepository,
+    @Inject('ExchangeRateRepository')
+    private readonly exchangeRateRepository: ExchangeRateRepository
+  ) {}
 
   /**
    * 가격 예측 실행
@@ -78,7 +81,7 @@ export class PredictPriceUseCase extends BaseService {
    * 4. 캐시에 없거나 만료된 경우 AI 예측 수행
    * 5. AI 예측 결과를 캐시에 저장 후 반환
    */
-  async execute(request: PredictPriceRequest): Promise<BaseResponse<PredictPriceResponse>> {
+  async execute(request: PredictPriceRequest): Promise<PredictPriceResponse> {
     try {
       const { symbol, timeframes = this.DEFAULT_TIMEFRAMES, forceRefresh = false } = request;
       const upperSymbol = symbol.toUpperCase();
@@ -96,7 +99,7 @@ export class PredictPriceUseCase extends BaseService {
             this.refreshPredictionInBackground(upperSymbol, timeframes);
           }
 
-          return this.success({
+          return {
             symbol: cachedPrediction.symbol,
             currentPrice: cachedPrediction.currentPrice,
             predictions: cachedPrediction.predictions,
@@ -105,7 +108,7 @@ export class PredictPriceUseCase extends BaseService {
             confidence: cachedPrediction.confidence,
             analysis: cachedPrediction.analysis,
             age
-          }, `캐시에서 ${upperSymbol} 가격 예측 조회 완료`);
+          };
         }
       }
 
@@ -116,7 +119,7 @@ export class PredictPriceUseCase extends BaseService {
       // AI 예측 결과를 캐시에 저장 (다음 요청을 위해)
       await this.cachePrediction(prediction);
 
-      return this.success({
+      return {
         symbol: prediction.symbol,
         currentPrice: prediction.currentPrice,
         predictions: prediction.predictions,
@@ -124,11 +127,11 @@ export class PredictPriceUseCase extends BaseService {
         resistanceLevels: prediction.resistanceLevels,
         confidence: prediction.confidence,
         analysis: prediction.analysis
-      }, `AI에서 ${upperSymbol} 가격 예측 완료`);
+      };
 
     } catch (error) {
       Logger.error(`가격 예측 중 오류: ${error.message}`);
-      return this.fail(`${request.symbol} 가격 예측 실패`);
+      throw new Error(`${request.symbol} 가격 예측 실패`);
     }
   }
 
@@ -228,57 +231,9 @@ export class PredictPriceUseCase extends BaseService {
    */
   private async getRealTimeExchangeRate(): Promise<number> {
     try {
-      // ExchangeRate-API 사용 (무료 플랜, 더 안정적)
-      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD', {
-        timeout: 5000, // 5초 타임아웃
-        headers: {
-          'User-Agent': 'Crypto-Tracker-Pro/1.0'
-        }
-      });
-      const data = response.data;
-      
-      if (data.rates && data.rates.KRW) {
-        const rate = data.rates.KRW;
-        Logger.info(`실시간 환율 조회 성공: 1 USD = ${rate} KRW`);
-        return rate;
-      }
-      
-      throw new Error('환율 데이터를 찾을 수 없습니다.');
+      return await this.exchangeRateRepository.getUsdKrwRate();
     } catch (error) {
-      Logger.error(`환율 API 호출 실패: ${error.message}`);
-      
-      // 대체 API 시도 (CurrencyAPI)
-      try {
-        const response = await axios.get('https://api.currencyapi.com/v3/latest?apikey=free&currencies=KRW&base_currency=USD', {
-          timeout: 5000
-        });
-        const data = response.data;
-        
-        if (data.data && data.data.KRW && data.data.KRW.value) {
-          const rate = data.data.KRW.value;
-          Logger.info(`대체 API 환율 조회 성공: 1 USD = ${rate} KRW`);
-          return rate;
-        }
-      } catch (secondError) {
-        Logger.error(`대체 환율 API도 실패: ${secondError.message}`);
-      }
-      
-      // 세 번째 대체 API 시도 (Open Exchange Rates)
-      try {
-        const response = await axios.get('https://open.er-api.com/v6/latest/USD', {
-          timeout: 5000
-        });
-        const data = response.data;
-        
-        if (data.rates && data.rates.KRW) {
-          const rate = data.rates.KRW;
-          Logger.info(`세 번째 API 환율 조회 성공: 1 USD = ${rate} KRW`);
-          return rate;
-        }
-      } catch (thirdError) {
-        Logger.error(`세 번째 환율 API도 실패: ${thirdError.message}`);
-      }
-      
+      Logger.error(`환율 조회 실패: ${error.message}`);
       throw error;
     }
   }
@@ -312,9 +267,22 @@ export class PredictPriceUseCase extends BaseService {
    * @returns 캐시된 예측 또는 null
    */
   private async getCachedPrediction(symbol: string): Promise<PricePrediction | null> {
-    // 실제 구현에서는 메모리 캐시나 Redis에서 조회
-    // 현재는 null 반환 (캐시 미구현)
-    return null;
+    const cached = this.predictionCache.get(symbol);
+    
+    if (!cached) {
+      return null;
+    }
+
+    const { prediction, timestamp } = cached;
+    const age = Date.now() - timestamp;
+
+    // 캐시가 만료되었는지 확인
+    if (age > this.PREDICTION_VALIDITY_DURATION) {
+      this.predictionCache.delete(symbol);
+      return null;
+    }
+
+    return prediction;
   }
 
   /**
@@ -323,8 +291,10 @@ export class PredictPriceUseCase extends BaseService {
    * @param prediction 예측 데이터
    */
   private async cachePrediction(prediction: PricePrediction): Promise<void> {
-    // 실제 구현에서는 메모리 캐시나 Redis에 저장
-    // 현재는 로그만 출력
+    this.predictionCache.set(prediction.symbol, {
+      prediction,
+      timestamp: Date.now()
+    });
     Logger.info(`예측 캐시 저장: ${prediction.symbol}`);
   }
 
