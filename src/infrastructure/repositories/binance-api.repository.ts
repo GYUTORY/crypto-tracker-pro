@@ -68,6 +68,113 @@ export class BinanceApiRepository implements BinanceRepository {
   }
 
   /**
+   * 심볼별 24시간 통계 데이터 조회
+   * @param symbol - 조회할 암호화폐 심볼
+   * @returns 24시간 통계 데이터
+   */
+  async get24hrStats(symbol: string): Promise<any> {
+    try {
+      Logger.info(`${symbol} 24시간 통계 조회 시작`);
+      const response = await axios.get(`${this.baseUrl}/api/v3/ticker/24hr`, {
+        params: { symbol: symbol.toUpperCase() }
+      });
+      
+      const data = response.data;
+      
+      // 거래량 포맷팅 (B, M, K 단위)
+      const volume = this.formatVolume(data.volume);
+      
+      // 변동률 계산 및 포맷팅
+      const changePercent = parseFloat(data.priceChangePercent);
+      const change = changePercent >= 0 ? `+${changePercent.toFixed(2)}%` : `${changePercent.toFixed(2)}%`;
+      
+      Logger.info(`${symbol} 24시간 통계 조회 성공`);
+      return {
+        symbol: data.symbol,
+        price: data.lastPrice,
+        change,
+        changePercent,
+        volume24h: volume,
+        high24h: data.highPrice,
+        low24h: data.lowPrice,
+        volume: data.volume,
+        quoteVolume: data.quoteVolume,
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      Logger.error(`${symbol} 24시간 통계 조회 실패: ${error.message}`);
+      throw new Error(`${symbol}의 24시간 통계 데이터를 가져올 수 없습니다.`);
+    }
+  }
+
+  /**
+   * 거래량 포맷팅 (B, M, K 단위)
+   * @param volume - 원본 거래량
+   * @returns 포맷된 거래량
+   */
+  private formatVolume(volume: string): string {
+    const num = parseFloat(volume);
+    if (num >= 1e9) {
+      return `${(num / 1e9).toFixed(1)}B`;
+    } else if (num >= 1e6) {
+      return `${(num / 1e6).toFixed(1)}M`;
+    } else if (num >= 1e3) {
+      return `${(num / 1e3).toFixed(1)}K`;
+    }
+    return num.toFixed(0);
+  }
+
+  /**
+   * 차트 데이터 조회
+   * @param symbol - 조회할 암호화폐 심볼
+   * @param timeframe - 시간 단위 (1h, 4h, 1d, 1w)
+   * @param limit - 데이터 포인트 수
+   * @returns 차트 데이터
+   */
+  async getChartData(symbol: string, timeframe: string = '1h', limit: number = 24): Promise<any> {
+    try {
+      Logger.info(`${symbol} 차트 데이터 조회 시작 (${timeframe}, ${limit}개)`);
+      
+      // 바이낸스 API interval 매핑
+      const intervalMap: { [key: string]: string } = {
+        '1h': '1h',
+        '4h': '4h', 
+        '1d': '1d',
+        '1w': '1w'
+      };
+      
+      const interval = intervalMap[timeframe] || '1h';
+      
+      const response = await axios.get(`${this.baseUrl}/api/v3/klines`, {
+        params: {
+          symbol: symbol.toUpperCase(),
+          interval,
+          limit
+        }
+      });
+      
+      const data = response.data.map((kline: any) => ({
+        timestamp: kline[0], // 시가 시간
+        price: kline[4],     // 종가
+        volume: kline[5],    // 거래량
+        high: kline[2],      // 고가
+        low: kline[3]        // 저가
+      }));
+      
+      Logger.info(`${symbol} 차트 데이터 조회 성공: ${data.length}개 포인트`);
+      
+      return {
+        symbol: symbol.toUpperCase(),
+        timeframe,
+        data
+      };
+    } catch (error) {
+      Logger.error(`${symbol} 차트 데이터 조회 실패: ${error.message}`);
+      throw new Error(`${symbol}의 차트 데이터를 가져올 수 없습니다.`);
+    }
+  }
+
+  /**
    * 거래 가능한 심볼 목록 조회
    * @returns 거래 가능한 심볼 목록
    */
