@@ -37,4 +37,60 @@ export class PriceResponseDto {
     type: Number
   })
   age?: number;
+
+  @ApiProperty({
+    description: '24시간 변동률 (문자열)',
+    example: '+2.45%',
+    required: false,
+    type: String
+  })
+  change?: string;
+
+  @ApiProperty({
+    description: '24시간 변동률 (숫자)',
+    example: 2.45,
+    required: false,
+    type: Number
+  })
+  changePercent?: number;
+
+  @ApiProperty({
+    description: '24시간 거래량',
+    example: '2.1B',
+    required: false,
+    type: String
+  })
+  volume24h?: string;
+
+  @ApiProperty({
+    description: '24시간 고가',
+    example: '115000.00',
+    required: false,
+    type: String
+  })
+  high24h?: string;
+
+  @ApiProperty({
+    description: '24시간 저가',
+    example: '112000.00',
+    required: false,
+    type: String
+  })
+  low24h?: string;
+
+  @ApiProperty({
+    description: '시가총액',
+    example: '2.2T',
+    required: false,
+    type: String
+  })
+  marketCap?: string;
+
+  @ApiProperty({
+    description: '타임스탬프',
+    example: 1703123456789,
+    required: false,
+    type: Number
+  })
+  timestamp?: number;
 } 

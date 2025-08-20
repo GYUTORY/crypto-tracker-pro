@@ -34,4 +34,20 @@ export interface BinanceRepository {
    * @returns 기술적 지표 데이터
    */
   getTechnicalData(symbol: string): Promise<TechnicalData>;
+
+  /**
+   * 심볼별 24시간 통계 데이터 조회
+   * @param symbol - 조회할 암호화폐 심볼
+   * @returns 24시간 통계 데이터
+   */
+  get24hrStats(symbol: string): Promise<any>;
+
+  /**
+   * 차트 데이터 조회
+   * @param symbol - 조회할 암호화폐 심볼
+   * @param timeframe - 시간 단위 (1h, 4h, 1d, 1w)
+   * @param limit - 데이터 포인트 수
+   * @returns 차트 데이터
+   */
+  getChartData(symbol: string, timeframe?: string, limit?: number): Promise<any>;
 } 
