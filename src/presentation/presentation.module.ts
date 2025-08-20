@@ -9,6 +9,7 @@ import { TcpController } from './controllers/tcp.controller';
 import { StreamController } from './controllers/stream.controller';
 import { SymbolsController } from './controllers/symbols.controller';
 import { NewsController } from './controllers/news.controller';
+import { MarketController } from './controllers/market.controller';
 import { ApplicationModule } from '../application/application.module';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { StreamingModule } from '../infrastructure/streaming/streaming.module';
@@ -27,6 +28,7 @@ import { StreamingModule } from '../infrastructure/streaming/streaming.module';
     StreamController,
     SymbolsController,
     NewsController,
+    MarketController,
   ],
 })
 export class PresentationModule {} 

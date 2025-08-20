@@ -8,8 +8,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { GetPriceUseCase } from '../../application/use-cases/get-price.use-case';
+import { GetChartDataUseCase } from '../../application/use-cases/get-chart-data.use-case';
 import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 import { PriceResponseDto } from '../../shared/dto/price-response.dto';
+import { ChartDataResponseDto, GetChartDataQueryDto } from '../../shared/dto/chart.dto';
 import { BaseService } from '../../shared/base-response';
 
 /**
@@ -20,7 +22,8 @@ import { BaseService } from '../../shared/base-response';
 @Controller('price')
 export class PriceController extends BaseService {
   constructor(
-    private readonly getPriceUseCase: GetPriceUseCase
+    private readonly getPriceUseCase: GetPriceUseCase,
+    private readonly getChartDataUseCase: GetChartDataUseCase
   ) {
     super();
   }
@@ -75,5 +78,50 @@ export class PriceController extends BaseService {
     });
 
     return this.success(recordSet, `${symbol} 가격 조회 완료`);
+  }
+
+  /**
+   * 차트 데이터 조회 API
+   * 
+   * 특정 암호화폐의 차트 데이터를 조회합니다.
+   * 
+   * @param symbol 조회할 암호화폐 심볼 (예: BTCUSDT, ETHUSDT)
+   * @param query 쿼리 파라미터 (timeframe, limit)
+   * @returns 차트 데이터
+   */
+  @Get(':symbol/chart')
+  @ApiOperation({
+    summary: '차트 데이터 조회',
+    description: '특정 암호화폐의 차트 데이터를 조회합니다.'
+  })
+  @ApiParam({
+    name: 'symbol',
+    description: '암호화폐 심볼 (예: BTCUSDT, ETHUSDT)',
+    example: 'BTCUSDT'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '차트 데이터 조회 성공',
+    type: BaseResponseDto<ChartDataResponseDto>
+  })
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 심볼'
+  })
+  @ApiResponse({
+    status: 500,
+    description: '서버 오류'
+  })
+  async getChartData(
+    @Param('symbol') symbol: string,
+    @Query() query: GetChartDataQueryDto
+  ): Promise<BaseResponseDto<ChartDataResponseDto>> {
+    const result = await this.getChartDataUseCase.execute({
+      symbol,
+      timeframe: query.timeframe,
+      limit: query.limit
+    });
+
+    return this.success(result, `${symbol} 차트 데이터 조회 완료`);
   }
 } 
