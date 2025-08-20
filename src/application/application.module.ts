@@ -8,6 +8,8 @@ import { AnalyzeTechnicalUseCase } from './use-cases/analyze-technical.use-case'
 import { AnalyzeTechnicalSimpleUseCase } from './use-cases/analyze-technical-simple.use-case';
 import { GetTradingSymbolsUseCase } from './use-cases/get-trading-symbols.use-case';
 import { GetBitcoinNewsUseCase } from './use-cases/get-bitcoin-news.use-case';
+import { GetChartDataUseCase } from './use-cases/get-chart-data.use-case';
+import { GetMarketStatsUseCase } from './use-cases/get-market-stats.use-case';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 
 @Module({
@@ -19,6 +21,8 @@ import { InfrastructureModule } from '../infrastructure/infrastructure.module';
     AnalyzeTechnicalSimpleUseCase,
     GetTradingSymbolsUseCase,
     GetBitcoinNewsUseCase,
+    GetChartDataUseCase,
+    GetMarketStatsUseCase,
   ],
   exports: [
     GetPriceUseCase,
@@ -27,6 +31,8 @@ import { InfrastructureModule } from '../infrastructure/infrastructure.module';
     AnalyzeTechnicalSimpleUseCase,
     GetTradingSymbolsUseCase,
     GetBitcoinNewsUseCase,
+    GetChartDataUseCase,
+    GetMarketStatsUseCase,
   ],
 })
 export class ApplicationModule {} 

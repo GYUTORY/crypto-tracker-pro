@@ -28,6 +28,13 @@ export interface GetPriceResponse {
   price: string;                     // 현재 가격
   source: 'memory' | 'api';         // 데이터 소스 (메모리 또는 API)
   age?: number;                      // 데이터 나이 (밀리초, 메모리에서 온 경우만)
+  change?: string;                   // 24시간 변동률 (문자열)
+  changePercent?: number;            // 24시간 변동률 (숫자)
+  volume24h?: string;                // 24시간 거래량
+  high24h?: string;                  // 24시간 고가
+  low24h?: string;                   // 24시간 저가
+  marketCap?: string;                // 시가총액
+  timestamp?: number;                // 타임스탬프
 }
 
 /**
@@ -69,23 +76,40 @@ export class GetPriceUseCase {
       if (!forceRefresh) {
         const memoryPrice = await this.priceRepository.findBySymbol(upperSymbol);
         
-        // 메모리에 유효한 데이터가 있는 경우
-        if (memoryPrice && !memoryPrice.isExpired(this.DATA_VALIDITY_DURATION)) {
-          const age = memoryPrice.getAge();
-          
-          // 데이터가 곧 만료될 예정이면 백그라운드에서 갱신
-          // 사용자 응답은 차단하지 않고 비동기적으로 처리
-          if (memoryPrice.isGettingOld(this.WARNING_THRESHOLD)) {
-            this.refreshPriceInBackground(upperSymbol);
-          }
-
-          return {
-            symbol: memoryPrice.symbol,
-            price: memoryPrice.price,
-            source: 'memory' as const,
-            age
-          };
+              // 메모리에 유효한 데이터가 있는 경우
+      if (memoryPrice && !memoryPrice.isExpired(this.DATA_VALIDITY_DURATION)) {
+        const age = memoryPrice.getAge();
+        
+        // 데이터가 곧 만료될 예정이면 백그라운드에서 갱신
+        // 사용자 응답은 차단하지 않고 비동기적으로 처리
+        if (memoryPrice.isGettingOld(this.WARNING_THRESHOLD)) {
+          this.refreshPriceInBackground(upperSymbol);
         }
+
+        // 24시간 통계 데이터 조회 (메모리 데이터와 함께)
+        let statsData = {};
+        try {
+          const stats = await this.binanceRepository.get24hrStats(upperSymbol);
+          statsData = {
+            change: stats.change,
+            changePercent: stats.changePercent,
+            volume24h: stats.volume24h,
+            high24h: stats.high24h,
+            low24h: stats.low24h,
+            timestamp: stats.timestamp
+          };
+        } catch (error) {
+          Logger.warn(`${upperSymbol} 24시간 통계 조회 실패: ${error.message}`);
+        }
+
+        return {
+          symbol: memoryPrice.symbol,
+          price: memoryPrice.price,
+          source: 'memory' as const,
+          age,
+          ...statsData
+        };
+      }
       }
 
       // 메모리에 없거나 만료된 경우, 또는 강제 새로고침인 경우 API에서 조회
@@ -95,10 +119,27 @@ export class GetPriceUseCase {
       // API에서 가져온 데이터를 메모리에 저장 (다음 요청을 위해)
       await this.priceRepository.save(apiPrice);
 
+      // 24시간 통계 데이터 조회
+      let statsData = {};
+      try {
+        const stats = await this.binanceRepository.get24hrStats(upperSymbol);
+        statsData = {
+          change: stats.change,
+          changePercent: stats.changePercent,
+          volume24h: stats.volume24h,
+          high24h: stats.high24h,
+          low24h: stats.low24h,
+          timestamp: stats.timestamp
+        };
+      } catch (error) {
+        Logger.warn(`${upperSymbol} 24시간 통계 조회 실패: ${error.message}`);
+      }
+
       return {
         symbol: apiPrice.symbol,
         price: apiPrice.price,
-        source: 'api' as const
+        source: 'api' as const,
+        ...statsData
       };
 
     } catch (error) {
