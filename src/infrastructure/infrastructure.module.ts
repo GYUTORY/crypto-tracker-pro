@@ -21,7 +21,10 @@ import { ConfigModule } from '../config/config.module';
 import { BinanceApiRepository } from './repositories/binance-api.repository';
 import { GoogleAiRepository } from './repositories/google-ai.repository';
 import { MemoryPriceRepository } from './repositories/memory-price.repository';
+import { ExchangeRateApiRepository } from './repositories/exchange-rate-api.repository';
+import { NewsCrawlerRepository } from './repositories/news-crawler.repository';
 import { TechnicalAnalysisService } from './services/technical-analysis.service';
+import { TranslationService } from './services/translation.service';
 
 @Module({
   imports: [ConfigModule], // 설정 모듈 의존성
@@ -44,6 +47,20 @@ import { TechnicalAnalysisService } from './services/technical-analysis.service'
       provide: 'PriceRepository',
       useClass: MemoryPriceRepository,
     },
+    // 환율 API Repository Provider
+    // 'ExchangeRateRepository' 토큰으로 ExchangeRateApiRepository 인스턴스 제공
+    {
+      provide: 'ExchangeRateRepository',
+      useClass: ExchangeRateApiRepository,
+    },
+    // 뉴스 Repository Provider
+    // 'NewsRepository' 토큰으로 NewsCrawlerRepository 인스턴스 제공
+    {
+      provide: 'NewsRepository',
+      useClass: NewsCrawlerRepository,
+    },
+    // 번역 서비스
+    TranslationService,
     // 기술적 분석 서비스
     TechnicalAnalysisService
   ],
@@ -52,6 +69,9 @@ import { TechnicalAnalysisService } from './services/technical-analysis.service'
     'BinanceRepository',
     'AiRepository',
     'PriceRepository',
+    'ExchangeRateRepository',
+    'NewsRepository',
+    TranslationService,
     TechnicalAnalysisService
   ],
 })
