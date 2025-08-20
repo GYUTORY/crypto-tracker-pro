@@ -7,12 +7,14 @@ import { PricePrediction, TimeframePrediction } from '../../domain/entities/pric
 import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
 import { AiRepository } from '../../domain/repositories/ai-repository.interface';
 import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
+import { ExchangeRateRepository } from '../../domain/repositories/exchange-rate-repository.interface';
 import { Price } from '../../domain/entities/price.entity';
 
 describe('PredictPriceUseCase', () => {
   let useCase: PredictPriceUseCase;
   let mockAiRepository: jest.Mocked<AiRepository>;
   let mockBinanceRepository: jest.Mocked<BinanceRepository>;
+  let mockExchangeRateRepository: jest.Mocked<ExchangeRateRepository>;
 
   const mockTechnicalData: TechnicalData = {
     rsi: 55,
@@ -77,9 +79,13 @@ describe('PredictPriceUseCase', () => {
         {
           provide: 'BinanceRepository',
           useValue: {
-            getCurrentPrice: jest.fn(),
-            isWebSocketConnected: jest.fn(),
-            reconnectWebSocket: jest.fn()
+            getCurrentPrice: jest.fn()
+          }
+        },
+        {
+          provide: 'ExchangeRateRepository',
+          useValue: {
+            getUsdKrwRate: jest.fn()
           }
         }
       ],
@@ -88,6 +94,7 @@ describe('PredictPriceUseCase', () => {
     useCase = module.get<PredictPriceUseCase>(PredictPriceUseCase);
     mockAiRepository = module.get('AiRepository');
     mockBinanceRepository = module.get('BinanceRepository');
+    mockExchangeRateRepository = module.get('ExchangeRateRepository');
   });
 
   it('should be defined', () => {
@@ -98,24 +105,25 @@ describe('PredictPriceUseCase', () => {
     it('should successfully predict price', async () => {
       // Given
       const request = { symbol: 'BTCKRW' };
-      const mockPrice = new Price('BTCKRW', '43250000', Date.now());
+      const mockPrice = new Price('BTCUSDT', '43250', Date.now());
       
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(mockPrice);
+      mockExchangeRateRepository.getUsdKrwRate.mockResolvedValue(1000);
       mockAiRepository.predictPrice.mockResolvedValue(mockPricePrediction);
 
       // When
       const result = await useCase.execute(request);
 
       // Then
-      expect(result.result).toBe(true);
-      expect(result.result_data.symbol).toBe('BTCKRW');
-      expect(result.result_data.currentPrice).toBe('43250000');
-      expect(result.result_data.predictions).toHaveLength(2);
-      expect(result.result_data.confidence).toBe(72);
-      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCKRW');
+      expect(result.symbol).toBe('BTCKRW');
+      expect(result.currentPrice).toBe('43250000');
+      expect(result.predictions).toHaveLength(2);
+      expect(result.confidence).toBe(72);
+      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCUSDT');
+      expect(mockExchangeRateRepository.getUsdKrwRate).toHaveBeenCalled();
       expect(mockAiRepository.predictPrice).toHaveBeenCalledWith(
         'BTCKRW',
-        '43250000',
+        '43250000.0000',
         expect.any(Object)
       );
     });
@@ -126,17 +134,18 @@ describe('PredictPriceUseCase', () => {
         symbol: 'BTCKRW', 
         timeframes: ['1h', '24h'] 
       };
-      const mockPrice = new Price('BTCKRW', '43250000', Date.now());
+      const mockPrice = new Price('BTCUSDT', '43250', Date.now());
       
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(mockPrice);
+      mockExchangeRateRepository.getUsdKrwRate.mockResolvedValue(1000);
       mockAiRepository.predictPrice.mockResolvedValue(mockPricePrediction);
 
       // When
       const result = await useCase.execute(request);
 
       // Then
-      expect(result.result).toBe(true);
-      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCKRW');
+      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCUSDT');
+      expect(mockExchangeRateRepository.getUsdKrwRate).toHaveBeenCalled();
     });
 
     it('should handle force refresh', async () => {
@@ -145,34 +154,33 @@ describe('PredictPriceUseCase', () => {
         symbol: 'BTCKRW', 
         forceRefresh: true 
       };
-      const mockPrice = new Price('BTCKRW', '43250000', Date.now());
+      const mockPrice = new Price('BTCUSDT', '43250', Date.now());
       
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(mockPrice);
+      mockExchangeRateRepository.getUsdKrwRate.mockResolvedValue(1000);
       mockAiRepository.predictPrice.mockResolvedValue(mockPricePrediction);
 
       // When
       const result = await useCase.execute(request);
 
       // Then
-      expect(result.result).toBe(true);
-      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCKRW');
+      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCUSDT');
+      expect(mockExchangeRateRepository.getUsdKrwRate).toHaveBeenCalled();
       expect(mockAiRepository.predictPrice).toHaveBeenCalled();
     });
 
     it('should handle AI repository error', async () => {
       // Given
       const request = { symbol: 'BTCKRW' };
-      const mockPrice = new Price('BTCKRW', '43250000', Date.now());
+      const mockPrice = new Price('BTCUSDT', '43250', Date.now());
       
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(mockPrice);
+      mockExchangeRateRepository.getUsdKrwRate.mockResolvedValue(1000);
       mockAiRepository.predictPrice.mockRejectedValue(new Error('AI service error'));
 
-      // When
-      const result = await useCase.execute(request);
-
-      // Then
-      expect(result.result).toBe(false);
-      expect(result.msg).toContain('BTCKRW 가격 예측 실패');
+      // When & Then
+      await expect(useCase.execute(request))
+        .rejects.toThrow('BTCKRW 가격 예측 실패');
     });
 
     it('should handle Binance repository error', async () => {
@@ -181,30 +189,42 @@ describe('PredictPriceUseCase', () => {
       
       mockBinanceRepository.getCurrentPrice.mockRejectedValue(new Error('Binance API error'));
 
-      // When
-      const result = await useCase.execute(request);
+      // When & Then
+      await expect(useCase.execute(request))
+        .rejects.toThrow('BTCKRW 가격 예측 실패');
+    });
 
-      // Then
-      expect(result.result).toBe(false);
-      expect(result.msg).toContain('BTCKRW 가격 예측 실패');
+    it('should handle ExchangeRate repository error', async () => {
+      // Given
+      const request = { symbol: 'BTCKRW' };
+      const mockPrice = new Price('BTCUSDT', '43250', Date.now());
+      
+      mockBinanceRepository.getCurrentPrice.mockResolvedValue(mockPrice);
+      mockExchangeRateRepository.getUsdKrwRate.mockRejectedValue(new Error('Exchange rate error'));
+
+      // When & Then
+      await expect(useCase.execute(request))
+        .rejects.toThrow('BTCKRW 가격 예측 실패');
     });
 
     it('should convert symbol to uppercase', async () => {
       // Given
       const request = { symbol: 'btckrw' };
-      const mockPrice = new Price('BTCKRW', '43250000', Date.now());
+      const mockPrice = new Price('BTCUSDT', '43250', Date.now());
       
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(mockPrice);
+      mockExchangeRateRepository.getUsdKrwRate.mockResolvedValue(1000);
       mockAiRepository.predictPrice.mockResolvedValue(mockPricePrediction);
 
       // When
       const result = await useCase.execute(request);
 
       // Then
-      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCKRW');
+      expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith('BTCUSDT');
+      expect(mockExchangeRateRepository.getUsdKrwRate).toHaveBeenCalled();
       expect(mockAiRepository.predictPrice).toHaveBeenCalledWith(
         'BTCKRW',
-        '43250000',
+        '43250000.0000',
         expect.any(Object)
       );
     });

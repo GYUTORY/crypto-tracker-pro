@@ -31,25 +31,23 @@ describe('PriceController', () => {
     it('should return price data for valid symbol', async () => {
       // Arrange
       const symbol = 'BTCUSDT';
-      const mockResponse: BaseResponse<any> = {
-        result: true,
-        msg: '메모리에서 BTCUSDT 가격 조회 완료',
-        result_data: {
-          symbol: 'BTCUSDT',
-          price: '50000',
-          source: 'memory',
-          age: 5000
-        },
-        code: 'S001'
+      const mockUseCaseResponse = {
+        symbol: 'BTCUSDT',
+        price: '50000',
+        source: 'memory' as const,
+        age: 5000
       };
 
-      mockGetPriceUseCase.execute.mockResolvedValue(mockResponse);
+      mockGetPriceUseCase.execute.mockResolvedValue(mockUseCaseResponse);
 
       // Act
       const result = await controller.getPrice(symbol, false);
 
       // Assert
-      expect(result).toEqual(mockResponse);
+      expect(result.result).toBe(true);
+      expect(result.msg).toBe('BTCUSDT 가격 조회 완료');
+      expect(result.result_data).toEqual(mockUseCaseResponse);
+      expect(result.code).toBe('S001');
       expect(mockGetPriceUseCase.execute).toHaveBeenCalledWith({
         symbol,
         forceRefresh: false
@@ -59,24 +57,22 @@ describe('PriceController', () => {
     it('should handle forceRefresh parameter', async () => {
       // Arrange
       const symbol = 'BTCUSDT';
-      const mockResponse: BaseResponse<any> = {
-        result: true,
-        msg: 'API에서 BTCUSDT 가격 조회 완료',
-        result_data: {
-          symbol: 'BTCUSDT',
-          price: '51000',
-          source: 'api'
-        },
-        code: 'S001'
+      const mockUseCaseResponse = {
+        symbol: 'BTCUSDT',
+        price: '51000',
+        source: 'api' as const
       };
 
-      mockGetPriceUseCase.execute.mockResolvedValue(mockResponse);
+      mockGetPriceUseCase.execute.mockResolvedValue(mockUseCaseResponse);
 
       // Act
       const result = await controller.getPrice(symbol, true);
 
       // Assert
-      expect(result).toEqual(mockResponse);
+      expect(result.result).toBe(true);
+      expect(result.msg).toBe('BTCUSDT 가격 조회 완료');
+      expect(result.result_data).toEqual(mockUseCaseResponse);
+      expect(result.code).toBe('S001');
       expect(mockGetPriceUseCase.execute).toHaveBeenCalledWith({
         symbol,
         forceRefresh: true
@@ -86,44 +82,32 @@ describe('PriceController', () => {
     it('should handle use case errors', async () => {
       // Arrange
       const symbol = 'INVALID';
-      const mockResponse: BaseResponse<any> = {
-        result: false,
-        msg: 'INVALID 가격 조회 실패',
-        result_data: null,
-        code: 'E500'
-      };
+      const errorMessage = 'INVALID 가격 조회 실패';
+      
+      mockGetPriceUseCase.execute.mockRejectedValue(new Error(errorMessage));
 
-      mockGetPriceUseCase.execute.mockResolvedValue(mockResponse);
-
-      // Act
-      const result = await controller.getPrice(symbol, false);
-
-      // Assert
-      expect(result).toEqual(mockResponse);
-      expect(result.result).toBe(false);
-      expect(result.code).toBe('E500');
+      // Act & Assert
+      await expect(controller.getPrice(symbol, false))
+        .rejects.toThrow(errorMessage);
     });
 
     it('should normalize symbol to uppercase', async () => {
       // Arrange
       const symbol = 'btcusdt';
-      const mockResponse: BaseResponse<any> = {
-        result: true,
-        msg: '메모리에서 BTCUSDT 가격 조회 완료',
-        result_data: {
-          symbol: 'BTCUSDT',
-          price: '50000',
-          source: 'memory'
-        },
-        code: 'S001'
+      const mockUseCaseResponse = {
+        symbol: 'BTCUSDT',
+        price: '50000',
+        source: 'memory' as const
       };
 
-      mockGetPriceUseCase.execute.mockResolvedValue(mockResponse);
+      mockGetPriceUseCase.execute.mockResolvedValue(mockUseCaseResponse);
 
       // Act
-      await controller.getPrice(symbol, false);
+      const result = await controller.getPrice(symbol, false);
 
       // Assert
+      expect(result.result).toBe(true);
+      expect(result.result_data).toEqual(mockUseCaseResponse);
       expect(mockGetPriceUseCase.execute).toHaveBeenCalledWith({
         symbol: 'btcusdt',
         forceRefresh: false
@@ -133,24 +117,20 @@ describe('PriceController', () => {
     it('should handle undefined forceRefresh parameter', async () => {
       // Arrange
       const symbol = 'BTCUSDT';
-      const mockResponse: BaseResponse<any> = {
-        result: true,
-        msg: '메모리에서 BTCUSDT 가격 조회 완료',
-        result_data: {
-          symbol: 'BTCUSDT',
-          price: '50000',
-          source: 'memory'
-        },
-        code: 'S001'
+      const mockUseCaseResponse = {
+        symbol: 'BTCUSDT',
+        price: '50000',
+        source: 'memory' as const
       };
 
-      mockGetPriceUseCase.execute.mockResolvedValue(mockResponse);
+      mockGetPriceUseCase.execute.mockResolvedValue(mockUseCaseResponse);
 
       // Act
       const result = await controller.getPrice(symbol, undefined);
 
       // Assert
-      expect(result).toEqual(mockResponse);
+      expect(result.result).toBe(true);
+      expect(result.result_data).toEqual(mockUseCaseResponse);
       expect(mockGetPriceUseCase.execute).toHaveBeenCalledWith({
         symbol,
         forceRefresh: false

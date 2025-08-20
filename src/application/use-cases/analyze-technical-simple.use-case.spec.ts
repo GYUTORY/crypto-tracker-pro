@@ -3,7 +3,7 @@ import { AnalyzeTechnicalSimpleUseCase } from './analyze-technical-simple.use-ca
 import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
 import { AiRepository } from '../../domain/repositories/ai-repository.interface';
 import { Price } from '../../domain/entities/price.entity';
-import { TechnicalAnalysis } from '../../domain/entities/technical-analysis.entity';
+import { TechnicalAnalysisResponse } from '../../domain/schemas/ai.schemas';
 
 describe('AnalyzeTechnicalSimpleUseCase', () => {
   let useCase: AnalyzeTechnicalSimpleUseCase;
@@ -40,36 +40,36 @@ describe('AnalyzeTechnicalSimpleUseCase', () => {
   });
 
   describe('execute', () => {
-    it('should return technical analysis for valid symbol', async () => {
+    it('should analyze technical indicators successfully', async () => {
       // Arrange
       const symbol = 'BTCUSDT';
       const priceData = new Price(symbol, '50000', Date.now());
-      const mockAnalysis = TechnicalAnalysis.create(
-        symbol,
-        '50000',
-        {
-          rsi: 65,
-          macd: 150,
-          macdSignal: 140,
-          bollingerUpper: '51000',
-          bollingerLower: '49000',
-          ma20: '50000',
-          ma50: '49500',
-          volume: '1000000',
-          volumeChange: '5'
+      const mockAnalysis: TechnicalAnalysisResponse = {
+        rsi: {
+          value: 65,
+          signal: 'neutral',
+          explanation: 'RSI는 중립적 수준입니다.'
         },
-        {
-          rsi: { value: 65, signal: 'neutral' as const, explanation: 'RSI 분석' },
-          macd: { value: 150, signal: 'buy' as const, explanation: 'MACD 분석' },
-          bollinger: { position: 'middle' as const, signal: 'neutral' as const, explanation: '볼린저 분석' },
-          movingAverages: { signal: 'buy' as const, explanation: '이동평균 분석' },
-          overallSignal: 'buy' as const,
-          confidence: 75,
-          simpleAdvice: '소량 매수 고려',
-          riskLevel: 'medium' as const,
-          riskExplanation: '중간 위험도'
-        }
-      );
+        macd: {
+          value: 0.5,
+          signal: 'bullish',
+          explanation: 'MACD는 상승 신호를 보이고 있습니다.'
+        },
+        bollinger: {
+          position: 'middle',
+          signal: 'neutral',
+          explanation: '볼린저 밴드 중간 위치입니다.'
+        },
+        movingAverages: {
+          signal: 'bullish',
+          explanation: '이동평균은 상승 추세를 보입니다.'
+        },
+        overallSignal: 'bullish',
+        confidence: 75,
+        simpleAdvice: '현재 상승 추세이므로 관망하거나 소량 매수 고려',
+        riskLevel: 'medium',
+        riskExplanation: '중간 수준의 위험도입니다.'
+      };
 
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(priceData);
       mockAiRepository.analyzeTechnicalIndicators.mockResolvedValue(mockAnalysis);
@@ -81,7 +81,7 @@ describe('AnalyzeTechnicalSimpleUseCase', () => {
       expect(result.result).toBe(true);
       expect(result.result_data.symbol).toBe(symbol);
       expect(result.result_data.price).toBe('50000');
-      expect(result.result_data.analysis).toEqual(mockAnalysis.analysis);
+      expect(result.result_data.analysis).toEqual(mockAnalysis);
       expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith(symbol);
       expect(mockAiRepository.analyzeTechnicalIndicators).toHaveBeenCalled();
     });
@@ -90,32 +90,32 @@ describe('AnalyzeTechnicalSimpleUseCase', () => {
       // Arrange
       const symbol = 'btcusdt';
       const priceData = new Price('BTCUSDT', '50000', Date.now());
-      const mockAnalysis = TechnicalAnalysis.create(
-        'BTCUSDT',
-        '50000',
-        {
-          rsi: 65,
-          macd: 150,
-          macdSignal: 140,
-          bollingerUpper: '51000',
-          bollingerLower: '49000',
-          ma20: '50000',
-          ma50: '49500',
-          volume: '1000000',
-          volumeChange: '5'
+      const mockAnalysis: TechnicalAnalysisResponse = {
+        rsi: {
+          value: 65,
+          signal: 'neutral',
+          explanation: 'RSI는 중립적 수준입니다.'
         },
-        {
-          rsi: { value: 65, signal: 'neutral' as const, explanation: 'RSI 분석' },
-          macd: { value: 150, signal: 'buy' as const, explanation: 'MACD 분석' },
-          bollinger: { position: 'middle' as const, signal: 'neutral' as const, explanation: '볼린저 분석' },
-          movingAverages: { signal: 'buy' as const, explanation: '이동평균 분석' },
-          overallSignal: 'buy' as const,
-          confidence: 75,
-          simpleAdvice: '소량 매수 고려',
-          riskLevel: 'medium' as const,
-          riskExplanation: '중간 위험도'
-        }
-      );
+        macd: {
+          value: 0.5,
+          signal: 'bullish',
+          explanation: 'MACD는 상승 신호를 보이고 있습니다.'
+        },
+        bollinger: {
+          position: 'middle',
+          signal: 'neutral',
+          explanation: '볼린저 밴드 중간 위치입니다.'
+        },
+        movingAverages: {
+          signal: 'bullish',
+          explanation: '이동평균은 상승 추세를 보입니다.'
+        },
+        overallSignal: 'bullish',
+        confidence: 75,
+        simpleAdvice: '현재 상승 추세이므로 관망하거나 소량 매수 고려',
+        riskLevel: 'medium',
+        riskExplanation: '중간 수준의 위험도입니다.'
+      };
 
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(priceData);
       mockAiRepository.analyzeTechnicalIndicators.mockResolvedValue(mockAnalysis);
@@ -163,32 +163,32 @@ describe('AnalyzeTechnicalSimpleUseCase', () => {
       // Arrange
       const symbol = 'BTCUSDT';
       const priceData = new Price(symbol, '50000', Date.now());
-      const mockAnalysis = TechnicalAnalysis.create(
-        symbol,
-        '50000',
-        {
-          rsi: 65,
-          macd: 150,
-          macdSignal: 140,
-          bollingerUpper: '51000',
-          bollingerLower: '49000',
-          ma20: '50000',
-          ma50: '49500',
-          volume: '1000000',
-          volumeChange: '5'
+      const mockAnalysis: TechnicalAnalysisResponse = {
+        rsi: {
+          value: 65,
+          signal: 'neutral',
+          explanation: 'RSI는 중립적 수준입니다.'
         },
-        {
-          rsi: { value: 65, signal: 'neutral' as const, explanation: 'RSI 분석' },
-          macd: { value: 150, signal: 'buy' as const, explanation: 'MACD 분석' },
-          bollinger: { position: 'middle' as const, signal: 'neutral' as const, explanation: '볼린저 분석' },
-          movingAverages: { signal: 'buy' as const, explanation: '이동평균 분석' },
-          overallSignal: 'buy' as const,
-          confidence: 75,
-          simpleAdvice: '소량 매수 고려',
-          riskLevel: 'medium' as const,
-          riskExplanation: '중간 위험도'
-        }
-      );
+        macd: {
+          value: 0.5,
+          signal: 'bullish',
+          explanation: 'MACD는 상승 신호를 보이고 있습니다.'
+        },
+        bollinger: {
+          position: 'middle',
+          signal: 'neutral',
+          explanation: '볼린저 밴드 중간 위치입니다.'
+        },
+        movingAverages: {
+          signal: 'bullish',
+          explanation: '이동평균은 상승 추세를 보입니다.'
+        },
+        overallSignal: 'bullish',
+        confidence: 75,
+        simpleAdvice: '현재 상승 추세이므로 관망하거나 소량 매수 고려',
+        riskLevel: 'medium',
+        riskExplanation: '중간 수준의 위험도입니다.'
+      };
 
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(priceData);
       mockAiRepository.analyzeTechnicalIndicators.mockResolvedValue(mockAnalysis);
@@ -218,32 +218,32 @@ describe('AnalyzeTechnicalSimpleUseCase', () => {
       // Arrange
       const symbol = 'BTCUSDT';
       const priceData = new Price(symbol, '50000', Date.now());
-      const mockAnalysis = TechnicalAnalysis.create(
-        symbol,
-        '50000',
-        {
-          rsi: 65,
-          macd: 150,
-          macdSignal: 140,
-          bollingerUpper: '51000',
-          bollingerLower: '49000',
-          ma20: '50000',
-          ma50: '49500',
-          volume: '1000000',
-          volumeChange: '5'
+      const mockAnalysis: TechnicalAnalysisResponse = {
+        rsi: {
+          value: 65,
+          signal: 'neutral',
+          explanation: 'RSI는 중립적 수준입니다.'
         },
-        {
-          rsi: { value: 65, signal: 'neutral' as const, explanation: 'RSI 분석' },
-          macd: { value: 150, signal: 'buy' as const, explanation: 'MACD 분석' },
-          bollinger: { position: 'middle' as const, signal: 'neutral' as const, explanation: '볼린저 분석' },
-          movingAverages: { signal: 'buy' as const, explanation: '이동평균 분석' },
-          overallSignal: 'buy' as const,
-          confidence: 75,
-          simpleAdvice: '소량 매수 고려',
-          riskLevel: 'medium' as const,
-          riskExplanation: '중간 위험도'
-        }
-      );
+        macd: {
+          value: 0.5,
+          signal: 'bullish',
+          explanation: 'MACD는 상승 신호를 보이고 있습니다.'
+        },
+        bollinger: {
+          position: 'middle',
+          signal: 'neutral',
+          explanation: '볼린저 밴드 중간 위치입니다.'
+        },
+        movingAverages: {
+          signal: 'bullish',
+          explanation: '이동평균은 상승 추세를 보입니다.'
+        },
+        overallSignal: 'bullish',
+        confidence: 75,
+        simpleAdvice: '현재 상승 추세이므로 관망하거나 소량 매수 고려',
+        riskLevel: 'medium',
+        riskExplanation: '중간 수준의 위험도입니다.'
+      };
 
       mockBinanceRepository.getCurrentPrice.mockResolvedValue(priceData);
       mockAiRepository.analyzeTechnicalIndicators.mockResolvedValue(mockAnalysis);

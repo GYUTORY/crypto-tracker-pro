@@ -49,10 +49,9 @@ describe('GetPriceUseCase', () => {
       const result = await useCase.execute({ symbol, forceRefresh: false });
 
       // Assert
-      expect(result.result).toBe(true);
-      expect(result.result_data.symbol).toBe(symbol);
-      expect(result.result_data.price).toBe('50000');
-      expect(result.result_data.source).toBe('memory');
+      expect(result.symbol).toBe(symbol);
+      expect(result.price).toBe('50000');
+      expect(result.source).toBe('memory');
       expect(mockPriceRepository.findBySymbol).toHaveBeenCalledWith(symbol);
       expect(mockBinanceRepository.getCurrentPrice).not.toHaveBeenCalled();
     });
@@ -71,10 +70,9 @@ describe('GetPriceUseCase', () => {
       const result = await useCase.execute({ symbol, forceRefresh: false });
 
       // Assert
-      expect(result.result).toBe(true);
-      expect(result.result_data.symbol).toBe(symbol);
-      expect(result.result_data.price).toBe('51000');
-      expect(result.result_data.source).toBe('api');
+      expect(result.symbol).toBe(symbol);
+      expect(result.price).toBe('51000');
+      expect(result.source).toBe('api');
       expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith(symbol);
       expect(mockPriceRepository.save).toHaveBeenCalledWith(apiPrice);
     });
@@ -93,8 +91,7 @@ describe('GetPriceUseCase', () => {
       const result = await useCase.execute({ symbol, forceRefresh: true });
 
       // Assert
-      expect(result.result).toBe(true);
-      expect(result.result_data.source).toBe('api');
+      expect(result.source).toBe('api');
       expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith(symbol);
       expect(mockPriceRepository.save).toHaveBeenCalledWith(apiPrice);
     });
@@ -112,8 +109,7 @@ describe('GetPriceUseCase', () => {
       const result = await useCase.execute({ symbol, forceRefresh: false });
 
       // Assert
-      expect(result.result).toBe(true);
-      expect(result.result_data.source).toBe('api');
+      expect(result.source).toBe('api');
       expect(mockBinanceRepository.getCurrentPrice).toHaveBeenCalledWith(symbol);
     });
 
@@ -123,13 +119,9 @@ describe('GetPriceUseCase', () => {
       mockPriceRepository.findBySymbol.mockResolvedValue(null);
       mockBinanceRepository.getCurrentPrice.mockRejectedValue(new Error('API Error'));
 
-      // Act
-      const result = await useCase.execute({ symbol, forceRefresh: false });
-
-      // Assert
-      expect(result.result).toBe(false);
-      expect(result.code).toBe('E500');
-      expect(result.msg).toContain('BTCUSDT 가격 조회 실패');
+      // Act & Assert
+      await expect(useCase.execute({ symbol, forceRefresh: false }))
+        .rejects.toThrow('BTCUSDT 가격 조회 실패');
     });
 
     it('should normalize symbol to uppercase', async () => {
@@ -159,9 +151,8 @@ describe('GetPriceUseCase', () => {
       const result = await useCase.execute({ symbol, forceRefresh: false });
 
       // Assert
-      expect(result.result).toBe(true);
-      expect(result.result_data.age).toBeDefined();
-      expect(typeof result.result_data.age).toBe('number');
+      expect(result.age).toBeDefined();
+      expect(typeof result.age).toBe('number');
     });
   });
 }); 

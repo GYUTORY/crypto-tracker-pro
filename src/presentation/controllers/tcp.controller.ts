@@ -5,10 +5,10 @@
  * @Get() - GET 요청 처리
  * @HttpCode() - HTTP 상태 코드 설정
  */
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { TcpService } from '../../tcp/tcp.service';
-import { PriceStoreService } from '../../tcp/price-store.service';
+import { StreamingRepository } from '../../infrastructure/streaming/streaming.repository';
+import { PriceRepository } from '../../domain/repositories/price-repository.interface';
 import { BaseService, BaseResponse } from '../../shared/base-response';
 import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 
@@ -21,8 +21,10 @@ import { BaseResponseDto } from '../../shared/dto/base-response.dto';
 export class TcpController extends BaseService {
   // constructor - 의존성 주입 (DI)
   constructor(
-    private readonly tcpService: TcpService,
-    private readonly priceStoreService: PriceStoreService,
+    @Inject('StreamingRepository')
+    private readonly streamingRepository: StreamingRepository,
+    @Inject('PriceRepository')
+    private readonly priceRepository: PriceRepository,
   ) {
     super();
   }
@@ -81,23 +83,26 @@ export class TcpController extends BaseService {
     memory: { priceCount: number; symbols: string[]; validityDuration: number };
     timestamp: string;
   }>> {
-    const [connectionStatus, memoryInfo] = await Promise.all([
-      this.tcpService.getConnectionStatusWithResponse(),
-      this.priceStoreService.getMemoryInfoWithResponse(),
-    ]);
+    const isConnected = this.streamingRepository.isConnected();
+    const subscriptions = this.streamingRepository.getSubscriptions();
+    const allPrices = await this.priceRepository.findAll();
     
-    if (connectionStatus.result && memoryInfo.result) {
-      return this.success(
-        {
-          connection: connectionStatus.result_data,
-          memory: memoryInfo.result_data,
-          timestamp: new Date().toISOString(),
+    return this.success(
+      {
+        connection: {
+          isConnected,
+          url: 'wss://stream.binance.com:9443/ws',
+          lastUpdate: new Date().toISOString(),
         },
-        'TCP status retrieved successfully'
-      );
-    } else {
-      return this.false('Failed to retrieve TCP status');
-    }
+        memory: {
+          priceCount: allPrices.length,
+          symbols: allPrices.map(p => p.symbol),
+          validityDuration: 30000, // 30초
+        },
+        timestamp: new Date().toISOString(),
+      },
+      'TCP status retrieved successfully'
+    );
   }
 
   /**
@@ -120,24 +125,24 @@ export class TcpController extends BaseService {
     symbols: string[];
     timestamp: string;
   }>> {
-    const memoryPrices = await this.priceStoreService.getAllPricesWithResponse();
+    const allPrices = await this.priceRepository.findAll();
+    const symbols = await this.priceRepository.getSymbols();
     
-    if (memoryPrices.result) {
-      const prices = memoryPrices.result_data;
-       const symbols = await this.priceStoreService.getSymbols();
-      
-      return this.success(
-        {
-          prices: prices,
-          count: prices.length,
-          symbols: symbols,
-          timestamp: new Date().toISOString(),
-        },
-        'All prices retrieved successfully'
-      );
-    } else {
-      return this.false('Failed to retrieve prices');
-    }
+    return this.success(
+      {
+        prices: allPrices.map(p => ({
+          symbol: p.symbol,
+          price: p.price,
+          timestamp: p.timestamp,
+          volume: p.volume,
+          changePercent24h: p.changePercent24h,
+        })),
+        count: allPrices.length,
+        symbols: symbols,
+        timestamp: new Date().toISOString(),
+      },
+      'All prices retrieved successfully'
+    );
   }
 
   /**
@@ -155,7 +160,11 @@ export class TcpController extends BaseService {
   @Get('reconnect')
   @HttpCode(HttpStatus.OK)
   async reconnect(): Promise<BaseResponse<boolean>> {
-    const recordSet = await this.tcpService.reconnectWithResponse();
-    return recordSet;
+    try {
+      await this.streamingRepository.reconnect();
+      return this.success(true, 'Reconnection completed successfully');
+    } catch (error) {
+      return this.fail('Reconnection failed');
+    }
   }
 } 
