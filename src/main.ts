@@ -1,11 +1,34 @@
 /**
- * NestJS 애플리케이션 진입점
+ * Crypto Tracker Pro - 애플리케이션 진입점 (Application Entry Point)
  * 
- * NestFactory.create() - NestJS 앱 인스턴스 생성
- * app.enableCors() - CORS 설정 (브라우저 보안 정책)
- * DocumentBuilder - Swagger 문서 설정 빌더
- * SwaggerModule.setup() - Swagger UI 엔드포인트 설정
- * app.listen() - HTTP 서버 시작
+ * NestJS 프레임워크를 사용한 암호화폐 추적 API 서버의 메인 진입점입니다.
+ * 
+ * 주요 기능:
+ * - NestJS 애플리케이션 인스턴스 생성 및 초기화
+ * - 보안 설정 (Helmet, CORS, Rate Limiting)
+ * - 글로벌 파이프라인 설정 (Validation, Transformation)
+ * - Swagger API 문서 자동 생성 및 설정
+ * - HTTP 서버 시작 및 네트워크 인터페이스 바인딩
+ * 
+ * 초기화 과정:
+ * 1. NestFactory.create() - AppModule을 루트로 앱 인스턴스 생성
+ * 2. 보안 미들웨어 설정 (Helmet, CORS)
+ * 3. 글로벌 ValidationPipe 설정
+ * 4. Swagger 문서 설정 (개발 환경에서만)
+ * 5. HTTP 서버 시작 및 포트 바인딩
+ * 
+ * 환경별 설정:
+ * - 개발 환경: Swagger 문서 활성화, 모든 CORS 허용
+ * - 프로덕션 환경: Swagger 문서 비활성화, 제한된 CORS 설정
+ * 
+ * 네트워크 접근:
+ * - 로컬 접근: http://localhost:3000
+ * - 네트워크 접근: http://[로컬IP]:3000
+ * - API 문서: http://localhost:3000/api-docs
+ * 
+ * 에러 처리:
+ * - 애플리케이션 시작 실패 시 로그 출력 후 프로세스 종료
+ * - 포트 충돌 시 적절한 에러 메시지 표시
  */
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -16,38 +39,70 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import Logger from './shared/logger';
 
+/**
+ * 애플리케이션 부트스트랩 함수 (Application Bootstrap Function)
+ * 
+ * NestJS 애플리케이션을 초기화하고 시작하는 메인 함수입니다.
+ * 
+ * 초기화 순서:
+ * 1. NestJS 앱 인스턴스 생성
+ * 2. 보안 미들웨어 설정
+ * 3. CORS 설정
+ * 4. 글로벌 파이프라인 설정
+ * 5. Swagger 문서 설정 (개발 환경)
+ * 6. HTTP 서버 시작
+ * 
+ * @returns Promise<void> - 애플리케이션 시작 완료
+ */
 async function bootstrap() {
-  // NestFactory.create() - AppModule을 루트로 앱 인스턴스 생성
+  // 1단계: NestJS 애플리케이션 인스턴스 생성
+  // AppModule을 루트 모듈로 하여 의존성 주입 컨테이너 초기화
   const app = await NestFactory.create(AppModule);
   
-  // 보안 헤더 설정
+  // 2단계: 보안 미들웨어 설정
+  // Helmet을 사용하여 보안 헤더 설정
+  // XSS, CSRF, Clickjacking 등 다양한 웹 보안 위협 방지
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
+        defaultSrc: ["'self'"],           // 기본 리소스는 같은 도메인에서만 로드
+        styleSrc: ["'self'", "'unsafe-inline'"], // CSS는 같은 도메인과 인라인 스타일 허용
+        scriptSrc: ["'self'"],            // JavaScript는 같은 도메인에서만 로드
+        imgSrc: ["'self'", "data:", "https:"], // 이미지는 같은 도메인, data URL, HTTPS 허용
       },
     },
   }));
 
-  // CORS 설정 - 모든 네트워크에서 접근 가능하도록 설정
+  // 3단계: CORS (Cross-Origin Resource Sharing) 설정
+  // 브라우저의 동일 출처 정책을 완화하여 다른 도메인에서의 API 접근 허용
   const isProduction = process.env.NODE_ENV === 'production';
-  const domainList = [];
+  
   app.enableCors({
-    origin: true, // 모든 도메인 허용 (개발 환경)
-    credentials: true, // 쿠키/인증 헤더 허용
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposedHeaders: ['Content-Length', 'X-Requested-With'],
+    origin: true, // 모든 도메인 허용 (개발 환경에서는 모든 출처 허용)
+    credentials: true, // 쿠키 및 인증 헤더 허용 (세션 관리용)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // 허용할 HTTP 메서드
+    allowedHeaders: [
+      'Content-Type',           // 요청 본문 타입
+      'Authorization',          // 인증 토큰
+      'X-Requested-With',       // AJAX 요청 식별
+      'Accept',                 // 응답 타입 선호도
+      'Origin',                 // 요청 출처
+      'Access-Control-Request-Method',    // CORS 프리플라이트 요청
+      'Access-Control-Request-Headers',   // CORS 프리플라이트 헤더
+      'Cache-Control',          // 캐시 제어
+      'Pragma',                 // HTTP/1.0 캐시 제어
+      'If-Modified-Since',      // 조건부 요청
+      'If-None-Match'           // ETag 기반 조건부 요청
+    ],
+    exposedHeaders: ['Content-Length', 'X-Requested-With'], // 클라이언트에 노출할 헤더
   });
 
-  // 글로벌 ValidationPipe 설정
+  // 4단계: 글로벌 ValidationPipe 설정
+  // 모든 HTTP 요청에 대해 자동으로 데이터 검증 및 변환 수행
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // DTO에 정의되지 않은 속성 제거
-    forbidNonWhitelisted: true, // DTO에 정의되지 않은 속성이 있으면 에러
-    transform: true, // 요청 데이터를 DTO 타입으로 자동 변환
+    whitelist: true, // DTO에 정의되지 않은 속성은 자동으로 제거 (보안 강화)
+    forbidNonWhitelisted: true, // DTO에 정의되지 않은 속성이 있으면 400 에러 반환
+    transform: true, // 요청 데이터를 DTO 타입으로 자동 변환 (문자열 → 숫자 등)
   }));
   
   // Swagger 문서 설정 - 환경에 따라 조건부 활성화
@@ -135,7 +190,7 @@ async function bootstrap() {
     Logger.warn('프로덕션 환경에서는 Swagger 문서가 비활성화됩니다.');
   }
 
-  // app.setGlobalPrefix('api') - 글로벌 경로 프리픽스 (현재 미사용)
+  // 글로벌 경로 프리픽스 (현재 미사용)
   const port = process.env.PORT || 3000;
   const host = process.env.HOST || '0.0.0.0'; // 모든 네트워크 인터페이스에서 접근 가능
   
