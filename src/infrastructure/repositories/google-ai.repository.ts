@@ -149,6 +149,26 @@ export class GoogleAiRepository implements AiRepository {
   }
 
   /**
+   * 일반적인 AI 분석 메서드
+   * 
+   * @param prompt - AI에게 전달할 프롬프트
+   * @returns AI 응답 문자열
+   */
+  async analyze(prompt: string): Promise<string> {
+    try {
+      // 설정에서 모델명 가져오기
+      const googleAIConfig = this.configService.getGoogleAIConfig();
+      const model = this.genAI.getGenerativeModel({ model: googleAIConfig.model });
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      Logger.error(`AI 분석 실패: ${error.message}`);
+      throw new Error('AI 분석 중 오류가 발생했습니다.');
+    }
+  }
+
+  /**
    * AI 서비스 연결 상태 확인 메서드
    * 
    * @returns boolean - 연결 상태 (true: 연결됨, false: 연결 안됨)
