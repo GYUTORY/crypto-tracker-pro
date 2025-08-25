@@ -18,5 +18,7 @@ export interface AiRepository {
     technicalData: TechnicalData
   ): Promise<PricePrediction>;
   
+  analyze(prompt: string): Promise<string>;
+  
   isConnected(): boolean;
 } 

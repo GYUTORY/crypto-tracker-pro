@@ -1,12 +1,43 @@
 /**
- * 가격 정보를 담는 도메인 엔티티
+ * 가격 정보 도메인 엔티티 (Price Domain Entity)
  * 
- * 암호화폐의 현재 가격, 거래량, 변동률 등의 정보를 담고 있습니다.
- * 도메인 로직(비즈니스 규칙)을 포함하여 데이터의 유효성을 검증하고,
- * 가격 데이터의 만료 여부나 나이 등을 계산할 수 있습니다.
+ * 암호화폐의 현재 가격, 거래량, 변동률 등의 정보를 담는 핵심 비즈니스 객체입니다.
+ * 
+ * 주요 특징:
+ * - 불변성 (Immutability): 생성 후 값 변경 불가
+ * - 자체 검증 (Self-Validation): 생성자에서 데이터 유효성 검증
+ * - 비즈니스 로직 포함: 만료 여부, 나이 계산 등
+ * - 도메인 규칙 적용: 가격은 양수여야 함, 심볼은 필수 등
+ * 
+ * Clean Architecture 원칙:
+ * - 외부 시스템에 전혀 의존하지 않는 순수한 도메인 객체
+ * - 비즈니스 규칙을 캡슐화하여 데이터 무결성 보장
+ * - Repository 인터페이스를 통해서만 데이터 접근
+ * 
+ * 사용 예시:
+ * ```typescript
+ * const price = Price.create('BTCUSDT', '45000.50');
+ * console.log(price.isExpired(30000)); // 30초 만료 여부 확인
+ * console.log(price.getAge()); // 데이터 나이 확인
+ * ```
  */
 export class Price {
-  // private readonly로 선언하여 생성 후 값 변경을 방지 (불변성 보장)
+  /**
+   * Price 엔티티 생성자 (Price Entity Constructor)
+   * 
+   * 암호화폐 가격 정보를 담는 엔티티를 생성합니다.
+   * 
+   * @param _symbol - 암호화폐 심볼 (예: BTCUSDT, ETHUSDT)
+   * @param _price - 현재 가격 (문자열로 받아 정밀도 보장)
+   * @param _timestamp - 생성 시간 (밀리초 단위, Unix timestamp)
+   * @param _volume - 24시간 거래량 (선택적, 포맷된 문자열)
+   * @param _changePercent24h - 24시간 변동률 (선택적, 문자열)
+   * 
+   * 특징:
+   * - private readonly로 선언하여 생성 후 값 변경을 방지 (불변성 보장)
+   * - 생성자에서 즉시 유효성 검증 수행
+   * - 문자열로 가격을 받아 부동소수점 정밀도 문제 방지
+   */
   constructor(
     private readonly _symbol: string,        // 암호화폐 심볼 (예: BTCUSDT)
     private readonly _price: string,         // 현재 가격 (문자열로 받아 정밀도 보장)
@@ -18,8 +49,17 @@ export class Price {
   }
 
   /**
-   * 데이터 유효성 검증
+   * 데이터 유효성 검증 (Data Validation)
+   * 
    * 생성자에서 호출되어 잘못된 데이터가 객체에 저장되는 것을 방지합니다.
+   * 도메인 규칙을 적용하여 데이터 무결성을 보장합니다.
+   * 
+   * 검증 규칙:
+   * 1. 심볼은 비어있거나 공백만 있으면 안 됨
+   * 2. 가격은 0보다 커야 함 (음수 가격은 존재할 수 없음)
+   * 3. 타임스탬프는 유효해야 함 (0보다 커야 함)
+   * 
+   * @throws Error - 유효성 검증 실패 시 에러 발생
    */
   private validate(): void {
     // 심볼이 비어있거나 공백만 있는 경우
