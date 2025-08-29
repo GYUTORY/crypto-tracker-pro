@@ -38,6 +38,8 @@ import { APP_GUARD } from '@nestjs/core';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import Logger from './shared/logger';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 /**
  * 애플리케이션 부트스트랩 함수 (Application Bootstrap Function)
@@ -45,16 +47,55 @@ import Logger from './shared/logger';
  * NestJS 애플리케이션을 초기화하고 시작하는 메인 함수입니다.
  * 
  * 초기화 순서:
- * 1. NestJS 앱 인스턴스 생성
- * 2. 보안 미들웨어 설정
- * 3. CORS 설정
- * 4. 글로벌 파이프라인 설정
- * 5. Swagger 문서 설정 (개발 환경)
- * 6. HTTP 서버 시작
+ * 1. 환경 변수 검증
+ * 2. NestJS 앱 인스턴스 생성
+ * 3. 보안 미들웨어 설정
+ * 4. CORS 설정
+ * 5. 글로벌 파이프라인 설정
+ * 6. Swagger 문서 설정 (개발 환경)
+ * 7. HTTP 서버 시작
  * 
  * @returns Promise<void> - 애플리케이션 시작 완료
  */
 async function bootstrap() {
+  // 0단계: 환경 변수 로드 (config 디렉토리의 .env 파일)
+  const envPath = path.join(process.cwd(), 'config', '.env');
+  const result = dotenv.config({ path: envPath });
+  
+  if (result.error) {
+    Logger.error('환경 변수 파일 로드 실패:', result.error.message);
+    process.exit(1);
+  }
+  
+  Logger.info(`환경 변수 파일 로드됨: ${envPath}`);
+  
+  // 0단계: 환경 변수 검증 (애플리케이션 시작 전)
+  try {
+    Logger.info('환경 변수 검증 시작...');
+    const { validateRequiredEnvVars } = await import('./config/env.validation');
+    
+    // 필수 환경 변수 빠른 검증
+    const requiredVars = [
+      'NODE_ENV',
+      'PORT',
+      'BINANCE_API_KEY',
+      'BINANCE_SECRET_KEY',
+      'GOOGLE_AI_API_KEY',
+      'JWT_SECRET'
+    ];
+    
+    // 디버깅을 위한 환경 변수 출력
+    Logger.info('현재 환경 변수 상태:');
+    requiredVars.forEach(key => {
+      Logger.info(`${key}: ${process.env[key] ? '설정됨' : '누락됨'}`);
+    });
+    
+    validateRequiredEnvVars(requiredVars);
+    Logger.info('환경 변수 검증 완료');
+  } catch (error) {
+    Logger.error('환경 변수 검증 실패:', error.message);
+    process.exit(1);
+  }
   // 1단계: NestJS 애플리케이션 인스턴스 생성
   // AppModule을 루트 모듈로 하여 의존성 주입 컨테이너 초기화
   const app = await NestFactory.create(AppModule);
