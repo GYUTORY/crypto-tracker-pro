@@ -2,11 +2,11 @@
  * 기술적 분석 유스케이스
  */
 import { Injectable, Inject } from '@nestjs/common';
-import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { TechnicalAnalysisResponse } from '../../domain/schemas/ai.schemas';
-import { BaseResponse, BaseService } from '../../shared/base-response';
-import Logger from '../../shared/logger';
+import { TechnicalData } from '@/domain/entities/technical-analysis';
+import { AiRepository } from '@/domain/repositories/ai';
+import { TechnicalAnalysisResponse } from '@/domain/schemas/ai.schemas';
+import { BaseResponse, BaseService } from '@/shared/base-response';
+import Logger from '@/shared/logger';
 
 export interface AnalyzeTechnicalRequest {
   symbol: string;

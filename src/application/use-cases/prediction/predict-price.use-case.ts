@@ -6,13 +6,13 @@
  * 지지/저항선과 신뢰도를 제공합니다.
  */
 import { Injectable, Inject } from '@nestjs/common';
-import { PricePrediction, TimeframePrediction } from '../../domain/entities/price-prediction.entity';
-import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { ExchangeRateRepository } from '../../domain/repositories/exchange-rate-repository.interface';
-import { BaseResponse, BaseService } from '../../shared/base-response';
-import Logger from '../../shared/logger';
+import { PricePrediction, TimeframePrediction } from '@/domain/entities/prediction';
+import { TechnicalData } from '@/domain/entities/technical-analysis';
+import { AiRepository } from '@/domain/repositories/ai';
+import { BinanceRepository } from '@/domain/repositories/market';
+import { ExchangeRateRepository } from '@/domain/repositories/market';
+import { BaseResponse, BaseService } from '@/shared/base-response';
+import Logger from '@/shared/logger';
 
 /**
  * 가격 예측 요청 데이터

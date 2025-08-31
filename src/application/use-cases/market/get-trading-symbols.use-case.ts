@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
+import { BinanceRepository } from '@/domain/repositories/market';
 
 /**
  * 거래 가능한 코인 목록 조회 요청

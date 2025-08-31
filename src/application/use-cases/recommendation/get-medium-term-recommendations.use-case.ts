@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CoinRecommendationService } from '../../infrastructure/services/coin-recommendation.service';
-import { CoinRecommendationResponseDto } from '../../shared/dto/recommendation.dto';
+import { CoinRecommendationService } from '@/infrastructure/services/recommendation';
+import { CoinRecommendationResponseDto } from '@/shared/dto/recommendation';
 
 @Injectable()
 export class GetMediumTermRecommendationsUseCase {

@@ -8,4 +8,4 @@
 export { GetPriceUseCase, GetPriceRequest, GetPriceResponse } from './get-price.use-case';
 
 // OHLCV 데이터 조회
-export { GetOhlcvDataUseCase, GetOhlcvDataRequest, GetOhlcvDataResponse } from './get-ohlcv-data.use-case';
+export { GetOHLCVDataUseCase, GetOHLCVDataRequest } from './get-ohlcv-data.use-case';

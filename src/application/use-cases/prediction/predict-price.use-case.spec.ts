@@ -3,12 +3,12 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { PredictPriceUseCase } from './predict-price.use-case';
-import { PricePrediction, TimeframePrediction } from '../../domain/entities/price-prediction.entity';
-import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { ExchangeRateRepository } from '../../domain/repositories/exchange-rate-repository.interface';
-import { Price } from '../../domain/entities/price.entity';
+import { PricePrediction, TimeframePrediction } from '@/domain/entities/prediction';
+import { TechnicalData } from '@/domain/entities/technical-analysis';
+import { AiRepository } from '@/domain/repositories/ai';
+import { BinanceRepository } from '@/domain/repositories/market';
+import { ExchangeRateRepository } from '@/domain/repositories/market';
+import { Price } from '@/domain/entities/price';
 
 describe('PredictPriceUseCase', () => {
   let useCase: PredictPriceUseCase;

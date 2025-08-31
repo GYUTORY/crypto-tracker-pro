@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { OHLCVRepository, TechnicalIndicatorRepository } from '../../domain/repositories/chart-repository.interface';
-import { TechnicalIndicatorsService } from '../../infrastructure/services/technical-indicators.service';
-import { MovingAverageResponseDto, MovingAverageType } from '../../shared/dto/chart.dto';
+import { OHLCVRepository, TechnicalIndicatorRepository } from '@/domain/repositories/chart';
+import { TechnicalIndicatorsService } from '@/infrastructure/services/technical-analysis';
+import { MovingAverageResponseDto, MovingAverageType } from '@/shared/dto/chart';
 
 export interface GetMovingAverageIndicatorRequest {
   symbol: string;

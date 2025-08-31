@@ -27,11 +27,11 @@
  * - 잘못된 심볼에 대한 검증 및 에러 처리
  */
 import { Injectable, Inject } from '@nestjs/common';
-import { Price } from '../../domain/entities/price.entity';
-import { PriceRepository } from '../../domain/repositories/price-repository.interface';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { BaseResponse, BaseService } from '../../shared/base-response';
-import Logger from '../../shared/logger';
+import { Price } from '@/domain/entities/price';
+import { PriceRepository } from '@/domain/repositories/price';
+import { BinanceRepository } from '@/domain/repositories/market';
+import { BaseResponse, BaseService } from '@/shared/base-response';
+import Logger from '@/shared/logger';
 
 /**
  * 가격 조회 요청 데이터 (Get Price Request)

@@ -5,4 +5,4 @@
  */
 
 // 비트코인 뉴스 조회
-export { GetBitcoinNewsUseCase, GetBitcoinNewsRequest, GetBitcoinNewsResponse } from './get-bitcoin-news.use-case';
+export { GetBitcoinNewsUseCase, GetBitcoinNewsRequest } from './get-bitcoin-news.use-case';

@@ -5,13 +5,13 @@
  */
 
 // 전체 추천 조회
-export { GetAllRecommendationsUseCase, GetAllRecommendationsRequest, GetAllRecommendationsResponse } from './get-all-recommendations.use-case';
+export { GetAllRecommendationsUseCase } from './get-all-recommendations.use-case';
 
 // 단기 추천 조회
-export { GetShortTermRecommendationsUseCase, GetShortTermRecommendationsRequest, GetShortTermRecommendationsResponse } from './get-short-term-recommendations.use-case';
+export { GetShortTermRecommendationsUseCase } from './get-short-term-recommendations.use-case';
 
 // 중기 추천 조회
-export { GetMediumTermRecommendationsUseCase, GetMediumTermRecommendationsRequest, GetMediumTermRecommendationsResponse } from './get-medium-term-recommendations.use-case';
+export { GetMediumTermRecommendationsUseCase } from './get-medium-term-recommendations.use-case';
 
 // 장기 추천 조회
-export { GetLongTermRecommendationsUseCase, GetLongTermRecommendationsRequest, GetLongTermRecommendationsResponse } from './get-long-term-recommendations.use-case';
+export { GetLongTermRecommendationsUseCase } from './get-long-term-recommendations.use-case';

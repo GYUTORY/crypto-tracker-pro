@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyzeTechnicalSimpleUseCase } from './analyze-technical-simple.use-case';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { Price } from '../../domain/entities/price.entity';
-import { TechnicalAnalysisResponse } from '../../domain/schemas/ai.schemas';
+import { BinanceRepository } from '@/domain/repositories/market';
+import { AiRepository } from '@/domain/repositories/ai';
+import { Price } from '@/domain/entities/price';
+import { TechnicalAnalysisResponse } from '@/domain/schemas/ai.schemas';
 
 describe('AnalyzeTechnicalSimpleUseCase', () => {
   let useCase: AnalyzeTechnicalSimpleUseCase;

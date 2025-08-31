@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import Logger from '../../shared/logger';
+import { BinanceRepository } from '@/domain/repositories/market';
+import Logger from '@/shared/logger';
 
 /**
  * 차트 데이터 조회 요청

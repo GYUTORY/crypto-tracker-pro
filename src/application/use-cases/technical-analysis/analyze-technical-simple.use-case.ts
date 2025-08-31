@@ -26,11 +26,11 @@
  * ```
  */
 import { Injectable, Inject } from '@nestjs/common';
-import { BaseResponse, BaseService } from '../../shared/base-response';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { TechnicalAnalysisResponse } from '../../domain/schemas/ai.schemas';
-import Logger from '../../shared/logger';
+import { BaseResponse, BaseService } from '@/shared/base-response';
+import { BinanceRepository } from '@/domain/repositories/market';
+import { AiRepository } from '@/domain/repositories/ai';
+import { TechnicalAnalysisResponse } from '@/domain/schemas/ai.schemas';
+import Logger from '@/shared/logger';
 
 /**
  * 기술적 분석 요청 데이터 인터페이스

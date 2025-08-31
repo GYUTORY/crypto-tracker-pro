@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { NewsRepository } from '../../domain/repositories/news-repository.interface';
-import { News, NewsListResponse } from '../../domain/entities/news.entity';
-import Logger from '../../shared/logger';
+import { NewsRepository } from '@/domain/repositories/news';
+import { News, NewsListResponse } from '@/domain/entities/news';
+import Logger from '@/shared/logger';
 
 /**
  * 비트코인 뉴스 조회 요청

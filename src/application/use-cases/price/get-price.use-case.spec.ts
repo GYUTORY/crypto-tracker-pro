@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetPriceUseCase } from './get-price.use-case';
-import { PriceRepository } from '../../domain/repositories/price-repository.interface';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { Price } from '../../domain/entities/price.entity';
+import { PriceRepository } from '@/domain/repositories/price';
+import { BinanceRepository } from '@/domain/repositories/market';
+import { Price } from '@/domain/entities/price';
 
 describe('GetPriceUseCase', () => {
   let useCase: GetPriceUseCase;

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import Logger from '../../shared/logger';
+import { BinanceRepository } from '@/domain/repositories/market';
+import Logger from '@/shared/logger';
 
 /**
  * 시장 통계 조회 유스케이스

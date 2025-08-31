@@ -7,8 +7,8 @@ import { Injectable } from '@nestjs/common';
 import { GetShortTermRecommendationsUseCase } from './get-short-term-recommendations.use-case';
 import { GetMediumTermRecommendationsUseCase } from './get-medium-term-recommendations.use-case';
 import { GetLongTermRecommendationsUseCase } from './get-long-term-recommendations.use-case';
-import { BaseResponse, BaseService } from '../../shared/base-response';
-import { AllRecommendationsResponseDto } from '../../shared/dto/recommendation.dto';
+import { BaseResponse, BaseService } from '@/shared/base-response';
+import { AllRecommendationsResponseDto } from '@/shared/dto/recommendation';
 
 @Injectable()
 export class GetAllRecommendationsUseCase extends BaseService {
@@ -39,7 +39,7 @@ export class GetAllRecommendationsUseCase extends BaseService {
 
       return this.success(response, '전체 추천 조회 완료');
     } catch (error) {
-      return this.false(`전체 추천 조회 실패: ${error.message}`);
+      return this.fail(`전체 추천 조회 실패: ${error.message}`);
     }
   }
 }

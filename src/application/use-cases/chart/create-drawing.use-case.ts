@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { DrawingRepository } from '../../domain/repositories/chart-repository.interface';
-import { UserDrawing } from '../../domain/entities/chart.entity';
-import { CreateDrawingDto, DrawingType } from '../../shared/dto/chart.dto';
+import { DrawingRepository } from '@/domain/repositories/chart';
+import { UserDrawing } from '@/domain/entities/chart';
+import { CreateDrawingDto, DrawingType } from '@/shared/dto/chart';
 
 export interface CreateDrawingRequest {
   symbol: string;

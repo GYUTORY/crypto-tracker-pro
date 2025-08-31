@@ -5,7 +5,7 @@
  */
 
 // 시장 통계 조회
-export { GetMarketStatsUseCase, GetMarketStatsRequest, GetMarketStatsResponse } from './get-market-stats.use-case';
+export { GetMarketStatsUseCase } from './get-market-stats.use-case';
 
 // 거래 가능한 심볼 조회
 export { GetTradingSymbolsUseCase, GetTradingSymbolsRequest, GetTradingSymbolsResponse } from './get-trading-symbols.use-case';

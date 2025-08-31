@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ChartInterval } from '../../shared/dto/chart.dto';
-import { OHLCVRepository } from '../../domain/repositories/chart-repository.interface';
-import { OHLCVResponseDto } from '../../shared/dto/chart.dto';
+import { ChartInterval } from '@/shared/dto/chart';
+import { OHLCVRepository } from '@/domain/repositories/chart';
+import { OHLCVResponseDto } from '@/shared/dto/chart';
 
 export interface GetOHLCVDataRequest {
   symbol: string;
