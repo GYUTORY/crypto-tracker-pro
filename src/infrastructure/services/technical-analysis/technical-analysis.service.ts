@@ -23,7 +23,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import Logger from '../../shared/logger';
+import Logger from '@/shared/logger';
 
 @Injectable()
 export class TechnicalAnalysisService {

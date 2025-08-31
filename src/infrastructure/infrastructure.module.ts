@@ -42,20 +42,14 @@
  */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '../config/config.module';
-import { BinanceApiRepository } from './repositories/binance-api.repository';
-import { GoogleAiRepository } from './repositories/google-ai.repository';
-import { MemoryPriceRepository } from './repositories/memory-price.repository';
-import { ExchangeRateApiRepository } from './repositories/exchange-rate-api.repository';
-import { NewsCrawlerRepository } from './repositories/news-crawler.repository';
-import { TechnicalAnalysisService } from './services/technical-analysis.service';
-import { TranslationService } from './services/translation.service';
-import { TechnicalIndicatorsService } from './services/technical-indicators.service';
-import { SampleDataService } from './services/sample-data.service';
-import { CoinRecommendationService } from './services/coin-recommendation.service';
-import { MemoryOHLCVRepository } from './repositories/memory-chart.repository';
-import { MemoryTechnicalIndicatorRepository } from './repositories/memory-chart.repository';
-import { MemoryDrawingRepository } from './repositories/memory-chart.repository';
-import { MemoryChartSettingsRepository } from './repositories/memory-chart.repository';
+import { BinanceApiRepository, ExchangeRateApiRepository } from './repositories/market';
+import { GoogleAiRepository } from './repositories/ai';
+import { MemoryPriceRepository } from './repositories/price';
+import { NewsCrawlerRepository } from './repositories/news';
+import { TechnicalAnalysisService, TechnicalIndicatorsService } from './services/technical-analysis';
+import { TranslationService, SampleDataService } from './services/utility';
+import { CoinRecommendationService } from './services/recommendation';
+import { MemoryOHLCVRepository, MemoryTechnicalIndicatorRepository, MemoryDrawingRepository, MemoryChartSettingsRepository } from './repositories/chart';
 
 @Module({
   imports: [ConfigModule], // 설정 모듈 의존성

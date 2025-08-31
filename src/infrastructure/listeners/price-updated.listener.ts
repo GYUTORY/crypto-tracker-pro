@@ -7,7 +7,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { PriceUpdatedEvent } from '../../domain/events/price-updated.event';
-import { PriceRepository } from '../../domain/repositories/price-repository.interface';
+import { PriceRepository } from '../../domain/repositories/price';
 import Logger from '../../shared/logger';
 
 @Injectable()

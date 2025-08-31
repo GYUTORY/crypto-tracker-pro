@@ -6,8 +6,8 @@
  */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { ExchangeRateRepository } from '../../domain/repositories/exchange-rate-repository.interface';
-import Logger from '../../shared/logger';
+import { ExchangeRateRepository } from '../../../domain/repositories/market';
+import Logger from '../../../shared/logger';
 
 @Injectable()
 export class ExchangeRateApiRepository implements ExchangeRateRepository {

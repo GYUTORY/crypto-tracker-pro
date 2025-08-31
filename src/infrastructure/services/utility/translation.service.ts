@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '../../config/config.service';
-import Logger from '../../shared/logger';
+import { ConfigService } from '../../../config/config.service';
+import Logger from '../../../shared/logger';
 
 /**
  * 번역 서비스

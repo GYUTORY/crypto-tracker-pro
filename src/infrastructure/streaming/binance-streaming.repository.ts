@@ -7,7 +7,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as WebSocket from 'ws';
-import { Price } from '../../domain/entities/price.entity';
+import { Price } from '../../domain/entities/price';
 import { PriceUpdatedEvent } from '../../domain/events/price-updated.event';
 import { StreamingRepository } from './streaming.repository';
 import { ConfigService } from '../../config/config.service';

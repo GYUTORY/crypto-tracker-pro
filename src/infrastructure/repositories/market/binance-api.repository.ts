@@ -6,11 +6,11 @@
  */
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { Price } from '../../domain/entities/price.entity';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
-import { ConfigService } from '../../config/config.service';
-import Logger from '../../shared/logger';
+import { Price } from '../../../domain/entities/price';
+import { BinanceRepository } from '../../../domain/repositories/market';
+import { TechnicalData } from '../../../domain/entities/technical-analysis';
+import { ConfigService } from '../../../config/config.service';
+import Logger from '../../../shared/logger';
 
 @Injectable()
 export class BinanceApiRepository implements BinanceRepository {

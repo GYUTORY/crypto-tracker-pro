@@ -28,9 +28,9 @@
  * ```
  */
 import { Injectable, Inject } from '@nestjs/common';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { BinanceRepository } from '../../domain/repositories/binance-repository.interface';
-import { NewsRepository } from '../../domain/repositories/news-repository.interface';
+import { AiRepository } from '../../../domain/repositories/ai';
+import { BinanceRepository } from '../../../domain/repositories/market';
+import { NewsRepository } from '../../../domain/repositories/news';
 import { 
   TimeframeType, 
   RecommendationReason,
@@ -38,8 +38,8 @@ import {
   RecommendationReasonDto,
   CoinRecommendationResponseDto,
   AllRecommendationsResponseDto
-} from '../../shared/dto/recommendation.dto';
-import Logger from '../../shared/logger';
+} from '../../../shared/dto/recommendation';
+import Logger from '../../../shared/logger';
 
 /**
  * AI 코인 추천 서비스 클래스 (AI Coin Recommendation Service Class)

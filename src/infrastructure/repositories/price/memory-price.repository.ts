@@ -25,10 +25,10 @@
  * - 비즈니스 로직과 데이터 접근 로직 분리
  */
 import { Injectable, Optional, OnModuleDestroy } from '@nestjs/common';
-import { Price } from '../../domain/entities/price.entity';
-import { PriceRepository } from '../../domain/repositories/price-repository.interface';
-import Logger from '../../shared/logger';
-import { ConfigService } from '../../config/config.service';
+import { Price } from '../../../domain/entities/price';
+import { PriceRepository } from '../../../domain/repositories/price';
+import Logger from '../../../shared/logger';
+import { ConfigService } from '../../../config/config.service';
 
 /**
  * 메모리 기반 가격 저장소 클래스 (Memory-based Price Repository Class)

@@ -26,12 +26,12 @@
  */
 import { Injectable, Inject } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ConfigService } from '../../config/config.service';
-import { AiRepository } from '../../domain/repositories/ai-repository.interface';
-import { TechnicalData } from '../../domain/entities/technical-analysis.entity';
-import { PricePrediction } from '../../domain/entities/price-prediction.entity';
-import { TechnicalAnalysisSchema, PricePredictionSchema, TechnicalAnalysisResponse, PricePredictionResponse } from '../../domain/schemas/ai.schemas';
-import Logger from '../../shared/logger';
+import { ConfigService } from '../../../config/config.service';
+import { AiRepository } from '../../../domain/repositories/ai';
+import { TechnicalData } from '../../../domain/entities/technical-analysis';
+import { PricePrediction } from '../../../domain/entities/prediction';
+import { TechnicalAnalysisSchema, PricePredictionSchema, TechnicalAnalysisResponse, PricePredictionResponse } from '../../../domain/schemas/ai.schemas';
+import Logger from '../../../shared/logger';
 
 @Injectable()
 export class GoogleAiRepository implements AiRepository {

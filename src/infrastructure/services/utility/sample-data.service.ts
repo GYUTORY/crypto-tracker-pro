@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ChartInterval } from '../../shared/dto/chart.dto';
-import { OHLCVData } from '../../domain/entities/chart.entity';
+import { ChartInterval } from '../../../shared/dto/chart';
+import { OHLCVData } from '../../../domain/entities/chart';
 
 /**
  * 샘플 데이터 생성 서비스

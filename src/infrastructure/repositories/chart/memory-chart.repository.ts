@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ChartInterval, IndicatorType, DrawingType } from '../../shared/dto/chart.dto';
-import { OHLCVData, TechnicalIndicator, UserDrawing, ChartSettings } from '../../domain/entities/chart.entity';
-import { OHLCVRepository, TechnicalIndicatorRepository, DrawingRepository, ChartSettingsRepository } from '../../domain/repositories/chart-repository.interface';
+import { ChartInterval, IndicatorType, DrawingType } from '../../../shared/dto/chart';
+import { OHLCVData, TechnicalIndicator, UserDrawing, ChartSettings } from '../../../domain/entities/chart';
+import { OHLCVRepository, TechnicalIndicatorRepository, DrawingRepository, ChartSettingsRepository } from '../../../domain/repositories/chart';
 
 /**
  * 메모리 기반 OHLCV 리포지토리

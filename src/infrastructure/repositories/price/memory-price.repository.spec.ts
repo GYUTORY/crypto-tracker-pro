@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MemoryPriceRepository } from './memory-price.repository';
-import { Price } from '../../domain/entities/price.entity';
+import { Price } from '@/domain/entities/price';
 
 describe('MemoryPriceRepository', () => {
   let repository: MemoryPriceRepository;

@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { NewsRepository } from '../../domain/repositories/news-repository.interface';
-import { News, NewsEntity } from '../../domain/entities/news.entity';
-import { ConfigService } from '../../config/config.service';
-import { TranslationService } from '../services/translation.service';
+import { NewsRepository } from '../../../domain/repositories/news';
+import { News, NewsEntity } from '../../../domain/entities/news';
+import { ConfigService } from '../../../config/config.service';
+import { TranslationService } from '../../services/utility';
 import * as cheerio from 'cheerio';
 import axios from 'axios';
-import Logger from '../../shared/logger';
+import Logger from '../../../shared/logger';
 
 @Injectable()
 export class NewsCrawlerRepository implements NewsRepository {

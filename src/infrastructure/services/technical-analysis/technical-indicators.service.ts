@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RSI, MACD, BollingerBands, SMA, EMA, WMA } from 'technicalindicators';
-import { ChartInterval, MovingAverageType } from '../../shared/dto/chart.dto';
-import { OHLCVData, RSIData, MACDData, BollingerBandsData, MovingAverageData } from '../../domain/entities/chart.entity';
+import { ChartInterval, MovingAverageType } from '../../../shared/dto/chart';
+import { OHLCVData, RSIData, MACDData, BollingerBandsData, MovingAverageData } from '../../../domain/entities/chart';
 
 /**
  * 기술적 지표 계산 서비스
