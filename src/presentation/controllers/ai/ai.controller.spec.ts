@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AiController } from './ai.controller';
-import { AnalyzeTechnicalSimpleUseCase } from '../../application/use-cases/analyze-technical-simple.use-case';
-import { BaseResponse } from '../../shared/base-response';
+import { AnalyzeTechnicalSimpleUseCase } from '@/application/use-cases/technical-analysis';
+import { BaseResponse } from '@/shared/base-response';
 
 describe('AiController', () => {
   let controller: AiController;

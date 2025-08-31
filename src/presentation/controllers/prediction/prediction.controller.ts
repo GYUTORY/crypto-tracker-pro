@@ -7,9 +7,9 @@
  */
 import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { PredictPriceUseCase } from '../../application/use-cases/predict-price.use-case';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
-import { BaseService } from '../../shared/base-response';
+import { PredictPriceUseCase } from '@/application/use-cases/prediction';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
+import { BaseService } from '@/shared/base-response';
 
 /**
  * 가격 예측 모델 API 그룹

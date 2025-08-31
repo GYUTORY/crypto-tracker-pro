@@ -36,12 +36,12 @@
  */
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { GetPriceUseCase } from '../../application/use-cases/get-price.use-case';
-import { GetChartDataUseCase } from '../../application/use-cases/get-chart-data.use-case';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
-import { PriceResponseDto } from '../../shared/dto/price-response.dto';
-import { ChartDataResponseDto, GetChartDataQueryDto } from '../../shared/dto/chart.dto';
-import { BaseService } from '../../shared/base-response';
+import { GetPriceUseCase } from '@/application/use-cases/price';
+import { GetChartDataUseCase } from '@/application/use-cases/chart';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
+import { PriceResponseDto } from '@/shared/dto/price';
+import { ChartDataResponseDto, GetChartDataQueryDto } from '@/shared/dto/chart';
+import { BaseService } from '@/shared/base-response';
 
 /**
  * 실시간 암호화폐 가격 조회 API 그룹 (Real-time Cryptocurrency Price API)

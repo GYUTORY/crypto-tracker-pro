@@ -5,12 +5,9 @@
  */
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { GetShortTermRecommendationsUseCase } from '../../application/use-cases/get-short-term-recommendations.use-case';
-import { GetMediumTermRecommendationsUseCase } from '../../application/use-cases/get-medium-term-recommendations.use-case';
-import { GetLongTermRecommendationsUseCase } from '../../application/use-cases/get-long-term-recommendations.use-case';
-import { GetAllRecommendationsUseCase } from '../../application/use-cases/get-all-recommendations.use-case';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
-import { BaseService } from '../../shared/base-response';
+import { GetShortTermRecommendationsUseCase, GetMediumTermRecommendationsUseCase, GetLongTermRecommendationsUseCase, GetAllRecommendationsUseCase } from '@/application/use-cases/recommendation';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
+import { BaseService } from '@/shared/base-response';
 
 @ApiTags('recommendation')
 @Controller('recommendation')

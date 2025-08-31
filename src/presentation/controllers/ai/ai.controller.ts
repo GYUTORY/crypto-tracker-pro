@@ -28,10 +28,10 @@
  */
 import { Controller, Post, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, getSchemaPath } from '@nestjs/swagger';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
-import { BaseService } from '../../shared/base-response';
-import { AnalyzeTechnicalSimpleUseCase } from '../../application/use-cases/analyze-technical-simple.use-case';
-import Logger from '../../shared/logger';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
+import { BaseService } from '@/shared/base-response';
+import { AnalyzeTechnicalSimpleUseCase } from '@/application/use-cases/technical-analysis';
+import Logger from '@/shared/logger';
 
 /**
  * AI 기반 기술적 분석 및 예측 API 그룹

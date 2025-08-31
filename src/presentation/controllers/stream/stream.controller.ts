@@ -6,16 +6,19 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Inject } from '@nestjs/common';
-import { StreamingRepository } from '../../infrastructure/streaming/streaming.repository';
-import { SubscribeRequestDto, UnsubscribeRequestDto, StreamStatusResponseDto } from '../dto/price.dto';
+import { StreamingRepository } from '@/infrastructure/streaming/streaming.repository';
+import { SubscribeRequestDto, UnsubscribeRequestDto, StreamStatusResponseDto } from '@/shared/dto/price';
+import { BaseService } from '@/shared/base-response';
 
 @ApiTags('streaming')
 @Controller('stream')
-export class StreamController {
+export class StreamController extends BaseService {
   constructor(
     @Inject('StreamingRepository')
     private readonly streamingRepository: StreamingRepository
-  ) {}
+  ) {
+    super();
+  }
 
   @Get('status')
   @ApiOperation({

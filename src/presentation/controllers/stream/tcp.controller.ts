@@ -7,10 +7,10 @@
  */
 import { Controller, Get, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { StreamingRepository } from '../../infrastructure/streaming/streaming.repository';
-import { PriceRepository } from '../../domain/repositories/price-repository.interface';
-import { BaseService, BaseResponse } from '../../shared/base-response';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
+import { StreamingRepository } from '@/infrastructure/streaming/streaming.repository';
+import { PriceRepository } from '@/domain/repositories/price';
+import { BaseService, BaseResponse } from '@/shared/base-response';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
 
 /**
  * WebSocket 연결 상태 및 메모리 데이터 관리 API 그룹

@@ -1,9 +1,9 @@
 import { Controller, Get, Query, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { GetBitcoinNewsUseCase } from '../../application/use-cases/get-bitcoin-news.use-case';
-import { BaseService } from '../../shared/base-response';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
-import { GetBitcoinNewsQueryDto, BitcoinNewsResponseDto } from '../../shared/dto/news.dto';
+import { GetBitcoinNewsUseCase } from '@/application/use-cases/news';
+import { BaseService } from '@/shared/base-response';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
+import { GetBitcoinNewsQueryDto, BitcoinNewsResponseDto } from '@/shared/dto/news';
 
 /**
  * 뉴스 컨트롤러

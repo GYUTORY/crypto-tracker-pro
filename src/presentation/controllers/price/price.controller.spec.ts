@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceController } from './price.controller';
-import { GetPriceUseCase } from '../../application/use-cases/get-price.use-case';
-import { BaseResponse } from '../../shared/base-response';
-import { Price } from '../../domain/entities/price.entity';
+import { GetPriceUseCase } from '@/application/use-cases/price';
+import { BaseResponse } from '@/shared/base-response';
+import { Price } from '@/domain/entities/price';
 
 describe('PriceController', () => {
   let controller: PriceController;

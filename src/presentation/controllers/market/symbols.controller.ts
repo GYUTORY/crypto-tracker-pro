@@ -2,8 +2,8 @@ import { Controller, Get, Query, HttpException, HttpStatus } from '@nestjs/commo
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { GetTradingSymbolsUseCase, GetTradingSymbolsRequest } from '../../application/use-cases/get-trading-symbols.use-case';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
+import { GetTradingSymbolsUseCase, GetTradingSymbolsRequest } from '@/application/use-cases/market';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
 
 /**
  * 거래 가능한 코인 목록 조회 DTO

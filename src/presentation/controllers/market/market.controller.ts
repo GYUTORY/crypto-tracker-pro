@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { GetMarketStatsUseCase } from '../../application/use-cases/get-market-stats.use-case';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
-import { MarketStatsResponseDto } from '../../shared/dto/market.dto';
-import { BaseService } from '../../shared/base-response';
+import { GetMarketStatsUseCase } from '@/application/use-cases/market';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
+import { MarketStatsResponseDto } from '@/shared/dto/market';
+import { BaseService } from '@/shared/base-response';
 
 /**
  * 시장 통계 컨트롤러

@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { BaseService } from '../../shared/base-response';
-import { BaseResponseDto } from '../../shared/dto/base-response.dto';
+import { BaseService } from '@/shared/base-response';
+import { BaseResponseDto } from '@/shared/dto/base-response.dto';
 import {
   OHLCVQueryDto,
   OHLCVResponseDto,
@@ -12,18 +12,14 @@ import {
   CreateDrawingDto,
   DrawingsResponseDto,
   ChartSettingsDto
-} from '../../shared/dto/chart.dto';
-import { GetOHLCVDataUseCase } from '../../application/use-cases/get-ohlcv-data.use-case';
-import { GetRSIIndicatorUseCase } from '../../application/use-cases/get-rsi-indicator.use-case';
-import { GetMACDIndicatorUseCase } from '../../application/use-cases/get-macd-indicator.use-case';
-import { GetBollingerBandsIndicatorUseCase } from '../../application/use-cases/get-bollinger-bands-indicator.use-case';
-import { GetMovingAverageIndicatorUseCase } from '../../application/use-cases/get-moving-average-indicator.use-case';
-import { CreateDrawingUseCase } from '../../application/use-cases/create-drawing.use-case';
-import { GetDrawingsUseCase } from '../../application/use-cases/get-drawings.use-case';
-import { SampleDataService } from '../../infrastructure/services/sample-data.service';
+} from '@/shared/dto/chart';
+import { GetOHLCVDataUseCase } from '@/application/use-cases/price';
+import { GetRSIIndicatorUseCase, GetMACDIndicatorUseCase, GetBollingerBandsIndicatorUseCase, GetMovingAverageIndicatorUseCase } from '@/application/use-cases/technical-analysis';
+import { CreateDrawingUseCase, GetDrawingsUseCase } from '@/application/use-cases/chart';
+import { SampleDataService } from '@/infrastructure/services/utility';
 import { Inject } from '@nestjs/common';
-import { OHLCVRepository } from '../../domain/repositories/chart-repository.interface';
-import { ChartInterval } from '../../shared/dto/chart.dto';
+import { OHLCVRepository } from '@/domain/repositories/chart';
+import { ChartInterval } from '@/shared/dto/chart';
 
 /**
  * 차트 컨트롤러 (Chart Controller)
