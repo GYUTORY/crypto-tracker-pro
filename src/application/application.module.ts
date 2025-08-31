@@ -28,25 +28,15 @@
  * - 비즈니스 규칙과 워크플로우 정의
  */
 import { Module } from '@nestjs/common';
-import { GetPriceUseCase } from './use-cases/get-price.use-case';
-import { PredictPriceUseCase } from './use-cases/predict-price.use-case';
-import { AnalyzeTechnicalUseCase } from './use-cases/analyze-technical.use-case';
-import { AnalyzeTechnicalSimpleUseCase } from './use-cases/analyze-technical-simple.use-case';
-import { GetTradingSymbolsUseCase } from './use-cases/get-trading-symbols.use-case';
-import { GetBitcoinNewsUseCase } from './use-cases/get-bitcoin-news.use-case';
-import { GetChartDataUseCase } from './use-cases/get-chart-data.use-case';
-import { GetMarketStatsUseCase } from './use-cases/get-market-stats.use-case';
-import { GetOHLCVDataUseCase } from './use-cases/get-ohlcv-data.use-case';
-import { GetRSIIndicatorUseCase } from './use-cases/get-rsi-indicator.use-case';
-import { GetMACDIndicatorUseCase } from './use-cases/get-macd-indicator.use-case';
-import { GetBollingerBandsIndicatorUseCase } from './use-cases/get-bollinger-bands-indicator.use-case';
-import { GetMovingAverageIndicatorUseCase } from './use-cases/get-moving-average-indicator.use-case';
-import { CreateDrawingUseCase } from './use-cases/create-drawing.use-case';
-import { GetDrawingsUseCase } from './use-cases/get-drawings.use-case';
-import { GetShortTermRecommendationsUseCase } from './use-cases/get-short-term-recommendations.use-case';
-import { GetMediumTermRecommendationsUseCase } from './use-cases/get-medium-term-recommendations.use-case';
-import { GetLongTermRecommendationsUseCase } from './use-cases/get-long-term-recommendations.use-case';
-import { GetAllRecommendationsUseCase } from './use-cases/get-all-recommendations.use-case';
+import { GetPriceUseCase } from './use-cases/price';
+import { PredictPriceUseCase } from './use-cases/prediction';
+import { AnalyzeTechnicalUseCase, AnalyzeTechnicalSimpleUseCase } from './use-cases/technical-analysis';
+import { GetTradingSymbolsUseCase, GetMarketStatsUseCase } from './use-cases/market';
+import { GetBitcoinNewsUseCase } from './use-cases/news';
+import { GetChartDataUseCase, CreateDrawingUseCase, GetDrawingsUseCase } from './use-cases/chart';
+import { GetOHLCVDataUseCase } from './use-cases/price';
+import { GetRSIIndicatorUseCase, GetMACDIndicatorUseCase, GetBollingerBandsIndicatorUseCase, GetMovingAverageIndicatorUseCase } from './use-cases/technical-analysis';
+import { GetShortTermRecommendationsUseCase, GetMediumTermRecommendationsUseCase, GetLongTermRecommendationsUseCase, GetAllRecommendationsUseCase } from './use-cases/recommendation';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 
 @Module({

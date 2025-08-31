@@ -32,16 +32,14 @@
  * - 비즈니스 로직은 직접 포함하지 않음
  */
 import { Module } from '@nestjs/common';
-import { PriceController } from './controllers/price.controller';
-import { PredictionController } from './controllers/prediction.controller';
-import { AiController } from './controllers/ai.controller';
-import { TcpController } from './controllers/tcp.controller';
-import { StreamController } from './controllers/stream.controller';
-import { SymbolsController } from './controllers/symbols.controller';
-import { NewsController } from './controllers/news.controller';
-import { MarketController } from './controllers/market.controller';
-import { ChartController } from './controllers/chart.controller';
-import { RecommendationController } from './controllers/recommendation.controller';
+import { PriceController } from './controllers/price';
+import { PredictionController } from './controllers/prediction';
+import { AiController } from './controllers/ai';
+import { TcpController, StreamController } from './controllers/stream';
+import { SymbolsController, MarketController } from './controllers/market';
+import { NewsController } from './controllers/news';
+import { ChartController } from './controllers/chart';
+import { RecommendationController } from './controllers/recommendation';
 import { ApplicationModule } from '../application/application.module';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { StreamingModule } from '../infrastructure/streaming/streaming.module';
