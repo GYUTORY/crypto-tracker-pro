@@ -4,5 +4,10 @@
  * 암호화폐 차트 데이터 관련 리포지토리 인터페이스들을 제공합니다.
  */
 
-// 차트 리포지토리 인터페이스
-export { ChartRepository } from './chart-repository.interface';
+// 차트 리포지토리 인터페이스들
+export { 
+  OHLCVRepository,
+  TechnicalIndicatorRepository,
+  DrawingRepository,
+  ChartSettingsRepository
+} from './chart-repository.interface';

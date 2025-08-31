@@ -4,8 +4,8 @@
  * 도메인 레이어에서 바이낸스 API에 접근하기 위한 인터페이스입니다.
  * 스트리밍 관련 기능은 StreamingRepository로 분리됩니다.
  */
-import { Price } from '../entities/price.entity';
-import { TechnicalData } from '../entities/technical-analysis.entity';
+import { Price } from '../../entities/price';
+import { TechnicalData } from '../../entities/technical-analysis';
 
 export interface BinanceRepository {
   /**

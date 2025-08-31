@@ -1,4 +1,4 @@
-import { News, NewsListResponse } from '../entities/news.entity';
+import { News, NewsListResponse } from '../../entities/news';
 
 /**
  * 뉴스 리포지토리 인터페이스

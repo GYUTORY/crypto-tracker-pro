@@ -1,9 +1,9 @@
 /**
  * AI 분석 서비스 인터페이스
  */
-import { TechnicalData } from '../entities/technical-analysis.entity';
-import { PricePrediction } from '../entities/price-prediction.entity';
-import { TechnicalAnalysisResponse } from '../schemas/ai.schemas';
+import { TechnicalData } from '../../entities/technical-analysis';
+import { PricePrediction } from '../../entities/prediction';
+import { TechnicalAnalysisResponse } from '../../schemas/ai.schemas';
 
 export interface AiRepository {
   analyzeTechnicalIndicators(

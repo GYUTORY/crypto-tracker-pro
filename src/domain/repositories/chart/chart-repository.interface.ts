@@ -1,5 +1,5 @@
-import { ChartInterval, IndicatorType, DrawingType } from '../../shared/dto/chart.dto';
-import { OHLCVData, TechnicalIndicator, UserDrawing, ChartSettings } from '../entities/chart.entity';
+import { ChartInterval, IndicatorType, DrawingType } from '../../../shared/dto/chart';
+import { OHLCVData, TechnicalIndicator, UserDrawing, ChartSettings } from '../../entities/chart';
 
 /**
  * OHLCV 데이터 리포지토리 인터페이스
