@@ -1,4 +1,4 @@
-import { ChartInterval, IndicatorType, DrawingType, MovingAverageType } from '../../shared/dto/chart.dto';
+import { ChartInterval, IndicatorType, DrawingType, MovingAverageType } from '../../../shared/dto/chart';
 
 /**
  * OHLCV 데이터 엔티티

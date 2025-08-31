@@ -5,4 +5,4 @@
  */
 
 // 기술적 분석 엔티티
-export { TechnicalAnalysis, TechnicalData, TechnicalIndicator } from './technical-analysis.entity';
+export { TechnicalAnalysis, TechnicalData, AnalysisResult } from './technical-analysis.entity';

@@ -5,4 +5,4 @@
  */
 
 // 가격 엔티티
-export { Price, PriceData, PriceStats } from './price.entity';
+export { Price } from './price.entity';

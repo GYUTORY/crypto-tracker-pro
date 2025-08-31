@@ -5,4 +5,13 @@
  */
 
 // 차트 엔티티
-export { Chart, ChartData, Drawing } from './chart.entity';
+export { 
+  OHLCVData, 
+  TechnicalIndicator, 
+  RSIData, 
+  MACDData, 
+  BollingerBandsData, 
+  MovingAverageData, 
+  UserDrawing, 
+  ChartSettings 
+} from './chart.entity';

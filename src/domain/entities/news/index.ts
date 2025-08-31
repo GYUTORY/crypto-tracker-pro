@@ -5,4 +5,4 @@
  */
 
 // 뉴스 엔티티
-export { News, NewsData } from './news.entity';
+export { News, NewsListResponse, NewsEntity } from './news.entity';
