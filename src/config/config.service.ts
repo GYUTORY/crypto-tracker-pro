@@ -79,6 +79,22 @@ export class ConfigService implements OnModuleInit {
     };
   }
 
+  // TypeORM 설정 가져오기
+  getTypeOrmConfig() {
+    return {
+      type: 'postgres' as const,
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+      synchronize: process.env.DB_SYNCHRONIZE === 'true' || false,
+      logging: process.env.DB_LOGGING === 'true' || false,
+      ssl: this.isProduction() ? { rejectUnauthorized: false } : false,
+    };
+  }
+
   // 바이낸스 API 설정 가져오기
   getBinanceConfig() {
     return {
@@ -130,7 +146,7 @@ export class ConfigService implements OnModuleInit {
   getGoogleAIConfig() {
     return {
       apiKey: this.get<string>('GOOGLE_AI_API_KEY'),
-      model: this.get<string>('GOOGLE_AI_MODEL') || 'gemini-1.5-pro',
+      model: this.get<string>('GOOGLE_AI_MODEL') || 'gemini-1.5-flash',
       timeout: this.get<number>('GOOGLE_AI_TIMEOUT'),
     };
   }

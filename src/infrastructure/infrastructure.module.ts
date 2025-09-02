@@ -21,6 +21,7 @@
  * - MemoryTechnicalIndicatorRepository: 기술적 지표 캐시
  * - MemoryDrawingRepository: 드로잉 데이터 캐시
  * - MemoryChartSettingsRepository: 차트 설정 캐시
+ * - MemoryUserRepository: 사용자 데이터 (메모리)
  * 
  * 서비스들:
  * - TechnicalAnalysisService: 기술적 분석 서비스
@@ -28,6 +29,9 @@
  * - TechnicalIndicatorsService: 기술적 지표 계산
  * - SampleDataService: 샘플 데이터 생성
  * - CoinRecommendationService: AI 코인 추천
+ * - AuthService: 인증 서비스
+ * - NotificationService: 알림 서비스
+ * - DashboardService: 대시보드 서비스
  * 
  * 의존성 주입 설정:
  * - 문자열 토큰을 사용한 Provider 등록
@@ -41,93 +45,186 @@
  * - 비즈니스 로직은 포함하지 않음
  */
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '../config/config.module';
-import { BinanceApiRepository, ExchangeRateApiRepository } from './repositories/market';
-import { GoogleAiRepository } from './repositories/ai';
-import { MemoryPriceRepository } from './repositories/price';
-import { NewsCrawlerRepository } from './repositories/news';
-import { TechnicalAnalysisService, TechnicalIndicatorsService } from './services/technical-analysis';
-import { TranslationService, SampleDataService } from './services/utility';
-import { CoinRecommendationService } from './services/recommendation';
-import { MemoryOHLCVRepository, MemoryTechnicalIndicatorRepository, MemoryDrawingRepository, MemoryChartSettingsRepository } from './repositories/chart';
+import { DatabaseModule } from '../config/database.module';
+
+// Binance API 관련
+import { BinanceApiRepository } from './repositories/market/binance-api.repository';
+
+// AI 관련
+import { GoogleAiRepository } from './repositories/ai/google-ai.repository';
+
+// 가격 관련
+import { MemoryPriceRepository } from './repositories/price/memory-price.repository';
+
+// 환율 관련
+import { ExchangeRateApiRepository } from './repositories/market/exchange-rate-api.repository';
+
+// 뉴스 관련
+import { NewsCrawlerRepository } from './repositories/news/news-crawler.repository';
+
+// 차트 관련
+import { MemoryOHLCVRepository } from './repositories/chart/memory-chart.repository';
+
+// 스트리밍 관련
+import { BinanceStreamingRepository } from './streaming/binance-streaming.repository';
+
+// 서비스들
+import { TranslationService } from './services/utility/translation.service';
+import { TechnicalAnalysisService } from './services/technical-analysis/technical-analysis.service';
+import { TechnicalIndicatorsService } from './services/technical-analysis/technical-indicators.service';
+import { CoinRecommendationService } from './services/recommendation/coin-recommendation.service';
+import { SampleDataService } from './services/utility/sample-data.service';
+
+// 사용자 관련 리포지토리
+import { PostgresUserRepository } from './repositories/user/postgres-user.repository';
+import { PostgresNotificationRepository } from './repositories/notification/postgres-notification.repository';
+import { PostgresDashboardRepository } from './repositories/dashboard/postgres-dashboard.repository';
+
+// 서비스들
+import { AuthService } from './services/auth/auth.service';
+import { NotificationService } from './services/notification/notification.service';
+import { DashboardService } from './services/dashboard/dashboard.service';
+
+// 리스너들
+import { PriceUpdatedListener } from './listeners/price-updated.listener';
 
 @Module({
-  imports: [ConfigModule], // 설정 모듈 의존성
+  imports: [
+    ConfigModule,
+    DatabaseModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1d' },
+    }),
+  ],
   providers: [
-    // 바이낸스 API Repository Provider
-    // 'BinanceRepository' 토큰으로 BinanceApiRepository 인스턴스 제공
+    // Binance API 관련 Provider들
     {
       provide: 'BinanceRepository',
       useClass: BinanceApiRepository,
     },
-    // AI Repository Provider
-    // 'AiRepository' 토큰으로 GoogleAiRepository 인스턴스 제공
+
+    // AI 관련 Provider들
     {
       provide: 'AiRepository',
       useClass: GoogleAiRepository,
     },
-    // 가격 데이터 Repository Provider
-    // 'PriceRepository' 토큰으로 MemoryPriceRepository 인스턴스 제공
+
+    // 가격 관련 Provider들
     {
       provide: 'PriceRepository',
       useClass: MemoryPriceRepository,
     },
-    // 환율 API Repository Provider
-    // 'ExchangeRateRepository' 토큰으로 ExchangeRateApiRepository 인스턴스 제공
+
+    // 환율 관련 Provider들
     {
       provide: 'ExchangeRateRepository',
       useClass: ExchangeRateApiRepository,
     },
-    // 뉴스 Repository Provider
-    // 'NewsRepository' 토큰으로 NewsCrawlerRepository 인스턴스 제공
+
+    // 뉴스 관련 Provider들
     {
       provide: 'NewsRepository',
       useClass: NewsCrawlerRepository,
     },
-    // 번역 서비스
-    TranslationService,
-    // 기술적 분석 서비스
-    TechnicalAnalysisService,
-    // 차트 관련 서비스들
-    TechnicalIndicatorsService,
-    SampleDataService,
-    // AI 코인 추천 서비스
-    CoinRecommendationService,
-    // 차트 관련 Repository들
+
+    // 차트 관련 Provider들
+    {
+      provide: 'ChartRepository',
+      useClass: MemoryOHLCVRepository,
+    },
     {
       provide: 'OHLCVRepository',
       useClass: MemoryOHLCVRepository,
     },
     {
       provide: 'TechnicalIndicatorRepository',
-      useClass: MemoryTechnicalIndicatorRepository,
+      useClass: MemoryOHLCVRepository,
     },
     {
       provide: 'DrawingRepository',
-      useClass: MemoryDrawingRepository,
+      useClass: MemoryOHLCVRepository,
     },
     {
       provide: 'ChartSettingsRepository',
-      useClass: MemoryChartSettingsRepository,
-    }
-  ],
-  exports: [
-    // 다른 모듈에서 사용할 수 있도록 Provider들 내보내기
-    'BinanceRepository',
-    'AiRepository',
-    'PriceRepository',
-    'ExchangeRateRepository',
-    'NewsRepository',
+      useClass: MemoryOHLCVRepository,
+    },
+
+    // 스트리밍 관련 Provider들
+    {
+      provide: 'BinanceStreamingRepository',
+      useClass: BinanceStreamingRepository,
+    },
+
+    // 사용자 관련 리포지토리 Provider들
+    {
+      provide: 'UserRepository',
+      useClass: PostgresUserRepository,
+    },
+    {
+      provide: 'NotificationRepository',
+      useClass: PostgresNotificationRepository,
+    },
+    {
+      provide: 'DashboardRepository',
+      useClass: PostgresDashboardRepository,
+    },
+
+    // 서비스 Provider들
     TranslationService,
     TechnicalAnalysisService,
+    TechnicalIndicatorsService,
+    CoinRecommendationService,
+    SampleDataService,
+    AuthService,
+    NotificationService,
+    DashboardService,
+
+    // 리스너 Provider들
+    PriceUpdatedListener,
+  ],
+  exports: [
+    // Binance API 관련 Provider들
+    'BinanceRepository',
+
+    // AI 관련 Provider들
+    'AiRepository',
+
+    // 가격 관련 Provider들
+    'PriceRepository',
+
+    // 환율 관련 Provider들
+    'ExchangeRateRepository',
+
+    // 뉴스 관련 Provider들
+    'NewsRepository',
+
     // 차트 관련 Provider들
+    'ChartRepository',
     'OHLCVRepository',
     'TechnicalIndicatorRepository',
     'DrawingRepository',
     'ChartSettingsRepository',
+
+    // 스트리밍 관련 Provider들
+    'BinanceStreamingRepository',
+
+    // 사용자 관련 리포지토리 Provider들
+    'UserRepository',
+    'NotificationRepository',
+    'DashboardRepository',
+
+    // 서비스 Provider들
+    TranslationService,
+    TechnicalAnalysisService,
     TechnicalIndicatorsService,
+    CoinRecommendationService,
     SampleDataService,
-    CoinRecommendationService
+    AuthService,
+    NotificationService,
+    DashboardService,
   ],
 })
 export class InfrastructureModule {} 

@@ -11,10 +11,7 @@ import { ConfigService } from './config.service';
 
 @Global()
 @Module({
-  // providers - 설정 서비스 제공
   providers: [ConfigService],
-  
-  // exports - 다른 모듈에서 사용할 수 있도록 서비스 내보내기
   exports: [ConfigService],
 })
 export class ConfigModule {} 

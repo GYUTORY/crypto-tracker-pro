@@ -24,12 +24,16 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ConfigModule } from './config/config.module';
+import { DatabaseModule } from './config/database.module';
 import { PresentationModule } from './presentation/presentation.module';
 
 @Module({
   imports: [
     // 환경 설정 모듈 - 애플리케이션 전체 설정 관리
     ConfigModule,
+    
+    // 데이터베이스 모듈 - PostgreSQL 연결 및 TypeORM 설정
+    DatabaseModule,
     
     // API 요청 제한 모듈 - DDoS 공격 방지 및 서버 리소스 보호
     ThrottlerModule.forRoot([
