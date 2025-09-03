@@ -17,23 +17,32 @@
 // 가격 관련 컨트롤러
 export * from './price';
 
-// AI 분석 관련 컨트롤러
-export * from './ai';
+// 차트 관련 컨트롤러
+export * from './chart';
+
+// 시장 관련 컨트롤러
+export * from './market';
+
+// 뉴스 관련 컨트롤러
+export * from './news';
 
 // 예측 관련 컨트롤러
 export * from './prediction';
 
-// 추천 시스템 관련 컨트롤러
+// 추천 관련 컨트롤러
 export * from './recommendation';
 
-// 차트 관련 컨트롤러
-export * from './chart';
-
-// 시장 데이터 관련 컨트롤러
-export * from './market';
-
-// 스트리밍 관련 컨트롤러
+// 스트림 관련 컨트롤러
 export * from './stream';
 
-// 뉴스 관련 컨트롤러
-export * from './news';
+// AI 관련 컨트롤러
+export * from './ai';
+
+// 인증 관련 컨트롤러
+export * from './auth';
+
+// 알림 관련 컨트롤러
+export * from './notification';
+
+// 대시보드 관련 컨트롤러
+export * from './dashboard';

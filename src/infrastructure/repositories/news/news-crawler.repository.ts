@@ -359,25 +359,29 @@ export class NewsCrawlerRepository implements NewsRepository {
     try {
       const news: News[] = [];
       
-      // RSS 피드 URL들
+      // RSS 피드 URL들 (문제가 있는 피드는 제거하고 안정적인 피드만 사용)
       const rssFeeds = [
         'https://cointelegraph.com/rss/tag/bitcoin',
         'https://cryptonews.com/news/bitcoin-news/feed/',
         'https://www.newsbtc.com/feed/',
-        'https://bitcoinmagazine.com/.rss/full/'
+        'https://decrypt.co/feed',
+        'https://www.coindesk.com/arc/outboundfeeds/rss/'
+        // bitcoinmagazine.com RSS는 타임아웃 문제로 임시 제거
       ];
 
-      for (const feedUrl of rssFeeds) {
+      // 병렬 처리로 성능 향상
+      const feedPromises = rssFeeds.map(async (feedUrl) => {
         try {
-                  const response = await axios.get(feedUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-          },
-          timeout: 2000 // 타임아웃 대폭 단축
-        });
+          const response = await axios.get(feedUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+              'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+            },
+            timeout: 5000 // 타임아웃 증가
+          });
 
           const $ = cheerio.load(response.data, { xmlMode: true });
+          const feedNews: News[] = [];
           
           $('item').each((_, element) => {
             const $el = $(element);
@@ -389,7 +393,7 @@ export class NewsCrawlerRepository implements NewsRepository {
             if (title && url && title.toLowerCase().includes('bitcoin')) {
               const publishedAt = pubDate ? new Date(pubDate) : new Date();
               
-              news.push(NewsEntity.create(
+              feedNews.push(NewsEntity.create(
                 title,
                 description || '',
                 url,
@@ -399,10 +403,31 @@ export class NewsCrawlerRepository implements NewsRepository {
             }
           });
           
-          Logger.info(`${feedUrl} RSS 크롤링 성공: ${news.length}개`);
+          Logger.info(`${feedUrl} RSS 크롤링 성공: ${feedNews.length}개`);
+          return feedNews;
         } catch (error) {
           Logger.error(`${feedUrl} RSS 크롤링 실패: ${error.message}`);
+          return [];
         }
+      });
+
+      // 모든 피드 결과 수집
+      const results = await Promise.allSettled(feedPromises);
+      let successCount = 0;
+      
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value.length > 0) {
+          news.push(...result.value);
+          successCount++;
+        }
+      });
+
+      Logger.info(`RSS 크롤링 완료: ${successCount}/${rssFeeds.length} 피드 성공, 총 ${news.length}개 뉴스 수집`);
+
+      // 뉴스가 충분하지 않으면 더미 데이터 추가
+      if (news.length < 5) {
+        Logger.warn('RSS 크롤링 결과가 부족하여 더미 데이터 추가');
+        news.push(...this.getDummyNews());
       }
 
       return news.slice(0, 20); // 최대 20개
@@ -419,6 +444,8 @@ export class NewsCrawlerRepository implements NewsRepository {
     if (url.includes('cointelegraph.com')) return 'Cointelegraph';
     if (url.includes('cryptonews.com')) return 'CryptoNews';
     if (url.includes('newsbtc.com')) return 'NewsBTC';
+    if (url.includes('decrypt.co')) return 'Decrypt';
+    if (url.includes('coindesk.com')) return 'CoinDesk';
     if (url.includes('bitcoinmagazine.com')) return 'Bitcoin Magazine';
     return 'Unknown';
   }

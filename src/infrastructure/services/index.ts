@@ -12,9 +12,18 @@
 // 기술적 분석 관련 서비스
 export * from './technical-analysis';
 
-// 추천 시스템 관련 서비스
+// 유틸리티 관련 서비스
+export * from './utility';
+
+// 추천 관련 서비스
 export * from './recommendation';
 
-// 유틸리티 서비스
-export * from './utility';
+// 인증 관련 서비스
+export * from './auth';
+
+// 알림 관련 서비스
+export * from './notification';
+
+// 대시보드 관련 서비스
+export * from './dashboard';
 

@@ -20,6 +20,9 @@
  * - NewsController: 암호화폐 뉴스 API
  * - MarketController: 시장 통계 API
  * - TcpController: 시스템 상태 관리 API
+ * - AuthController: 사용자 인증 API
+ * - NotificationController: 알림 관리 API
+ * - DashboardController: 대시보드 관리 API
  * 
  * 의존성:
  * - ApplicationModule: 비즈니스 로직 (Use Cases)
@@ -32,6 +35,8 @@
  * - 비즈니스 로직은 직접 포함하지 않음
  */
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { PriceController } from './controllers/price';
 import { PredictionController } from './controllers/prediction';
 import { AiController } from './controllers/ai';
@@ -40,12 +45,24 @@ import { SymbolsController, MarketController } from './controllers/market';
 import { NewsController } from './controllers/news';
 import { ChartController } from './controllers/chart';
 import { RecommendationController } from './controllers/recommendation';
+import { AuthController } from './controllers/auth';
+import { NotificationController } from './controllers/notification';
+import { DashboardController } from './controllers/dashboard';
 import { ApplicationModule } from '../application/application.module';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { StreamingModule } from '../infrastructure/streaming/streaming.module';
 
 @Module({
   imports: [
+    // JWT 모듈 설정
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '24h' },
+    }),
+    
+    // Passport 모듈
+    PassportModule,
+    
     // 비즈니스 로직 모듈 - Use Cases 제공
     ApplicationModule,
     
@@ -85,6 +102,15 @@ import { StreamingModule } from '../infrastructure/streaming/streaming.module';
     
     // AI 코인 추천 API
     RecommendationController,
+    
+    // 사용자 인증 API
+    AuthController,
+    
+    // 알림 관리 API
+    NotificationController,
+    
+    // 대시보드 관리 API
+    DashboardController,
   ],
 })
 export class PresentationModule {} 

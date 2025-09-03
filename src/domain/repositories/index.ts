@@ -14,14 +14,23 @@
 // 가격 관련 리포지토리
 export * from './price';
 
-// AI 분석 관련 리포지토리
-export * from './ai';
-
-// 시장 데이터 관련 리포지토리
-export * from './market';
-
 // 차트 관련 리포지토리
 export * from './chart';
 
 // 뉴스 관련 리포지토리
 export * from './news';
+
+// AI 관련 리포지토리
+export * from './ai';
+
+// 바이낸스 관련 리포지토리
+export * from './market';
+
+// 사용자 관련 리포지토리
+export * from './user';
+
+// 알림 관련 리포지토리
+export * from './notification';
+
+// 대시보드 관련 리포지토리
+export * from './dashboard';

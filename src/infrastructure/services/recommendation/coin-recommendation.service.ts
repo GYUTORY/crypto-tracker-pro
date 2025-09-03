@@ -108,11 +108,45 @@ export class CoinRecommendationService {
    * ```
    */
   async generateShortTermRecommendations(): Promise<CoinRecommendationResponseDto> {
-    const prompt = `
+    try {
+      // 1. 현재 날짜와 시간 정보 수집
+      const currentDate = new Date();
+      const currentDateString = currentDate.toISOString();
+      const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][currentDate.getDay()];
+      
+      // 2. 실시간 시장 데이터 수집
+      const marketData = await this.getCurrentMarketData();
+      
+      // 3. 최신 뉴스 데이터 수집
+      const recentNews = await this.getRecentNews();
+      
+      // 4. 기술적 지표 데이터 수집
+      const technicalIndicators = await this.getTechnicalIndicators();
+
+      const prompt = `
+현재 시점: ${currentDateString} (${dayOfWeek}요일)
+
+=== 현재 시장 상황 ===
+${marketData}
+
+=== 최신 뉴스 및 이벤트 ===
+${recentNews}
+
+=== 주요 기술적 지표 ===
+${technicalIndicators}
+
 다음은 단기 투자(1-7일)를 위한 암호화폐 추천 요청입니다.
 
-현재 시장 상황을 분석하고, 기술적 지표, 뉴스, 시장 심리 등을 종합적으로 고려하여 
+위의 실시간 데이터를 기반으로 현재 시장 상황을 정확히 분석하고, 
+기술적 지표, 뉴스, 시장 심리 등을 종합적으로 고려하여 
 단기적으로 상승 가능성이 높은 TOP 3 코인을 추천해주세요.
+
+분석 시 고려사항:
+1. 현재 시장의 전반적인 트렌드와 변동성
+2. 최신 뉴스와 이벤트가 시장에 미치는 영향
+3. 기술적 지표의 신호 (RSI, MACD, 볼린저 밴드 등)
+4. 거래량과 모멘텀 지표
+5. 단기적 지지/저항선 돌파 가능성
 
 다음 JSON 형식으로 정확히 응답해주세요:
 
@@ -143,28 +177,65 @@ export class CoinRecommendationService {
 반드시 유효한 JSON 형식으로만 응답해주세요. 다른 설명이나 텍스트는 포함하지 마세요.
 `;
 
-    const aiResponse = await this.aiRepository.analyze(prompt);
-    const recommendations = this.parseAIRecommendations(aiResponse);
+      const aiResponse = await this.aiRepository.analyze(prompt);
+      const recommendations = this.parseAIRecommendations(aiResponse);
 
-    return {
-      timeframe: TimeframeType.SHORT_TERM,
-      timeframeDescription: '단기 투자 (1-7일)',
-      recommendations: recommendations.slice(0, 3),
-      generatedAt: new Date().toISOString(),
-      modelInfo: 'Gemini 1.5 Pro - Technical Analysis & Market Sentiment',
-      marketAnalysis: '단기 시장은 기술적 돌파와 뉴스 이벤트에 민감하게 반응하고 있습니다.'
-    };
+      return {
+        timeframe: TimeframeType.SHORT_TERM,
+        timeframeDescription: '단기 투자 (1-7일)',
+        recommendations: recommendations.slice(0, 3),
+        generatedAt: currentDateString,
+        modelInfo: 'Gemini 1.5 Pro - Real-time Technical Analysis & Market Sentiment',
+        marketAnalysis: this.generateMarketAnalysis(marketData, 'short')
+      };
+    } catch (error) {
+      Logger.error('단기 추천 생성 실패:', error);
+      return this.generateFallbackRecommendations(TimeframeType.SHORT_TERM);
+    }
   }
 
   /**
    * 중기 추천 코인 생성 (1-4주)
    */
   async generateMediumTermRecommendations(): Promise<CoinRecommendationResponseDto> {
-    const prompt = `
+    try {
+      // 1. 현재 날짜와 시간 정보 수집
+      const currentDate = new Date();
+      const currentDateString = currentDate.toISOString();
+      
+      // 2. 실시간 시장 데이터 수집
+      const marketData = await this.getCurrentMarketData();
+      
+      // 3. 최신 뉴스 데이터 수집
+      const recentNews = await this.getRecentNews();
+      
+      // 4. 기본적 분석 데이터 수집
+      const fundamentalData = await this.getFundamentalData();
+
+      const prompt = `
+현재 시점: ${currentDateString}
+
+=== 현재 시장 상황 ===
+${marketData}
+
+=== 최신 뉴스 및 이벤트 ===
+${recentNews}
+
+=== 기본적 분석 데이터 ===
+${fundamentalData}
+
 다음은 중기 투자(1-4주)를 위한 암호화폐 추천 요청입니다.
 
+위의 실시간 데이터를 기반으로 현재 시장 상황을 정확히 분석하고,
 기본적 분석, 기술적 분석, 시장 트렌드, 기관 투자자 관심도 등을 종합적으로 고려하여 
 중기적으로 성장 가능성이 높은 TOP 3 코인을 추천해주세요.
+
+분석 시 고려사항:
+1. 프로젝트의 개발 진행 상황과 업데이트
+2. 생태계 성장과 파트너십 확대
+3. 기관 투자자들의 관심도 변화
+4. 시장 심리와 소셜 미디어 감정
+5. 중기적 기술적 트렌드
 
 다음 JSON 형식으로 정확히 응답해주세요:
 
@@ -195,28 +266,65 @@ export class CoinRecommendationService {
 반드시 유효한 JSON 형식으로만 응답해주세요. 다른 설명이나 텍스트는 포함하지 마세요.
 `;
 
-    const aiResponse = await this.aiRepository.analyze(prompt);
-    const recommendations = this.parseAIRecommendations(aiResponse);
+      const aiResponse = await this.aiRepository.analyze(prompt);
+      const recommendations = this.parseAIRecommendations(aiResponse);
 
-    return {
-      timeframe: TimeframeType.MEDIUM_TERM,
-      timeframeDescription: '중기 투자 (1-4주)',
-      recommendations: recommendations.slice(0, 3),
-      generatedAt: new Date().toISOString(),
-      modelInfo: 'Gemini 1.5 Pro - Fundamental & Technical Analysis',
-      marketAnalysis: '중기 시장은 기본적 요인과 기술적 트렌드의 조합으로 움직입니다.'
-    };
+      return {
+        timeframe: TimeframeType.MEDIUM_TERM,
+        timeframeDescription: '중기 투자 (1-4주)',
+        recommendations: recommendations.slice(0, 3),
+        generatedAt: currentDateString,
+        modelInfo: 'Gemini 1.5 Pro - Real-time Fundamental & Technical Analysis',
+        marketAnalysis: this.generateMarketAnalysis(marketData, 'medium')
+      };
+    } catch (error) {
+      Logger.error('중기 추천 생성 실패:', error);
+      return this.generateFallbackRecommendations(TimeframeType.MEDIUM_TERM);
+    }
   }
 
   /**
    * 장기 추천 코인 생성 (1-12개월)
    */
   async generateLongTermRecommendations(): Promise<CoinRecommendationResponseDto> {
-    const prompt = `
+    try {
+      // 1. 현재 날짜와 시간 정보 수집
+      const currentDate = new Date();
+      const currentDateString = currentDate.toISOString();
+      
+      // 2. 실시간 시장 데이터 수집
+      const marketData = await this.getCurrentMarketData();
+      
+      // 3. 최신 뉴스 데이터 수집
+      const recentNews = await this.getRecentNews();
+      
+      // 4. 장기적 분석 데이터 수집
+      const longTermData = await this.getLongTermData();
+
+      const prompt = `
+현재 시점: ${currentDateString}
+
+=== 현재 시장 상황 ===
+${marketData}
+
+=== 최신 뉴스 및 이벤트 ===
+${recentNews}
+
+=== 장기적 분석 데이터 ===
+${longTermData}
+
 다음은 장기 투자(1-12개월)를 위한 암호화폐 추천 요청입니다.
 
+위의 실시간 데이터를 기반으로 현재 시장 상황을 정확히 분석하고,
 기본적 분석, 생태계 성장성, 규제 환경, 기술 혁신, 기관 채택 등을 종합적으로 고려하여 
 장기적으로 가치가 크게 상승할 가능성이 높은 TOP 3 코인을 추천해주세요.
+
+분석 시 고려사항:
+1. 프로젝트의 장기적 비전과 로드맵
+2. 기술적 혁신과 경쟁 우위
+3. 규제 환경 변화와 적응력
+4. 기관 투자자들의 장기적 관심
+5. 생태계 확장 가능성
 
 다음 JSON 형식으로 정확히 응답해주세요:
 
@@ -247,17 +355,21 @@ export class CoinRecommendationService {
 반드시 유효한 JSON 형식으로만 응답해주세요. 다른 설명이나 텍스트는 포함하지 마세요.
 `;
 
-    const aiResponse = await this.aiRepository.analyze(prompt);
-    const recommendations = this.parseAIRecommendations(aiResponse);
+      const aiResponse = await this.aiRepository.analyze(prompt);
+      const recommendations = this.parseAIRecommendations(aiResponse);
 
-    return {
-      timeframe: TimeframeType.LONG_TERM,
-      timeframeDescription: '장기 투자 (1-12개월)',
-      recommendations: recommendations.slice(0, 3),
-      generatedAt: new Date().toISOString(),
-      modelInfo: 'Gemini 1.5 Pro - Fundamental & Ecosystem Analysis',
-      marketAnalysis: '장기 시장은 생태계 성장과 기술 혁신이 핵심 동력입니다.'
-    };
+      return {
+        timeframe: TimeframeType.LONG_TERM,
+        timeframeDescription: '장기 투자 (1-12개월)',
+        recommendations: recommendations.slice(0, 3),
+        generatedAt: currentDateString,
+        modelInfo: 'Gemini 1.5 Pro - Real-time Fundamental & Ecosystem Analysis',
+        marketAnalysis: this.generateMarketAnalysis(marketData, 'long')
+      };
+    } catch (error) {
+      Logger.error('장기 추천 생성 실패:', error);
+      return this.generateFallbackRecommendations(TimeframeType.LONG_TERM);
+    }
   }
 
   /**
@@ -412,6 +524,230 @@ export class CoinRecommendationService {
         stopLoss: 0.40
       }
     ];
+  }
+
+  /**
+   * 현재 시장 데이터 수집
+   */
+  private async getCurrentMarketData(): Promise<string> {
+    try {
+      const symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT'];
+      const marketData = [];
+
+      for (const symbol of symbols) {
+        try {
+          const price = await this.binanceRepository.getSymbolPrice(symbol);
+          const stats = await this.binanceRepository.get24hrStats(symbol);
+          
+          marketData.push(`${symbol}: $${price} (24h: ${stats.change}, 거래량: ${stats.volume24h})`);
+        } catch (error) {
+          Logger.warn(`${symbol} 시장 데이터 수집 실패:`, error);
+        }
+      }
+
+      return marketData.length > 0 
+        ? `주요 코인 현재 가격:\n${marketData.join('\n')}`
+        : '시장 데이터 수집 중 오류 발생';
+    } catch (error) {
+      Logger.error('시장 데이터 수집 실패:', error);
+      return '시장 데이터 수집 중 오류 발생';
+    }
+  }
+
+  /**
+   * 최신 뉴스 데이터 수집
+   */
+  private async getRecentNews(): Promise<string> {
+    try {
+      const news = await this.newsRepository.crawlBitcoinNews(); // 최근 뉴스 크롤링
+      if (news && news.length > 0) {
+        const recentNews = news.slice(0, 5); // 최근 5개 뉴스
+        const newsSummaries = recentNews.map((item, index) => 
+          `${index + 1}. ${item.title} (${item.publishedAt})`
+        );
+        return `최신 뉴스:\n${newsSummaries.join('\n')}`;
+      }
+      return '최신 뉴스 데이터 없음';
+    } catch (error) {
+      Logger.error('뉴스 데이터 수집 실패:', error);
+      return '뉴스 데이터 수집 중 오류 발생';
+    }
+  }
+
+  /**
+   * 기술적 지표 데이터 수집
+   */
+  private async getTechnicalIndicators(): Promise<string> {
+    try {
+      const symbols = ['BTCUSDT', 'ETHUSDT'];
+      const indicators = [];
+
+      for (const symbol of symbols) {
+        try {
+          const technicalData = await this.binanceRepository.getTechnicalData(symbol);
+          
+          // RSI 상태 판단
+          let rsiStatus = '중립';
+          if (technicalData.rsi > 70) rsiStatus = '과매수';
+          else if (technicalData.rsi < 30) rsiStatus = '과매도';
+          
+          // MACD 신호 판단
+          let macdSignal = '중립';
+          if (technicalData.macd > technicalData.macdSignal) macdSignal = '상승';
+          else if (technicalData.macd < technicalData.macdSignal) macdSignal = '하락';
+          
+          // 볼린저 밴드 위치 판단
+          const currentPrice = await this.binanceRepository.getSymbolPrice(symbol);
+          const price = parseFloat(currentPrice);
+          const upper = parseFloat(technicalData.bollingerUpper);
+          const lower = parseFloat(technicalData.bollingerLower);
+          
+          let bbPosition = '중간';
+          if (price >= upper) bbPosition = '상단';
+          else if (price <= lower) bbPosition = '하단';
+          
+          indicators.push(`${symbol} - RSI: ${technicalData.rsi.toFixed(1)} (${rsiStatus}), MACD: ${macdSignal} 신호, BB: ${bbPosition} 밴드`);
+        } catch (error) {
+          Logger.warn(`${symbol} 기술적 지표 수집 실패:`, error);
+          // 개별 심볼 실패 시 기본 정보 제공
+          indicators.push(`${symbol} - 기술적 지표 수집 실패`);
+        }
+      }
+
+      return indicators.length > 0 
+        ? `기술적 지표:\n${indicators.join('\n')}`
+        : '기술적 지표 데이터 수집 중 오류 발생';
+    } catch (error) {
+      Logger.error('기술적 지표 수집 실패:', error);
+      return '기술적 지표 데이터 수집 중 오류 발생';
+    }
+  }
+
+  /**
+   * 기본적 분석 데이터 수집
+   */
+  private async getFundamentalData(): Promise<string> {
+    try {
+      const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
+      const fundamentalData = [];
+
+      for (const symbol of symbols) {
+        try {
+          const stats = await this.binanceRepository.get24hrStats(symbol);
+          const price = await this.binanceRepository.getSymbolPrice(symbol);
+          
+          // 거래량과 변동성을 기반으로 기본적 분석
+          const volume = parseFloat(stats.volume);
+          const changePercent = parseFloat(stats.changePercent);
+          
+          let analysis = '';
+          if (volume > 1000000) { // 거래량이 100만 이상
+            analysis = '높은 거래량으로 시장 관심 집중';
+          } else if (Math.abs(changePercent) > 5) {
+            analysis = '높은 변동성으로 단기 기회 존재';
+          } else {
+            analysis = '안정적인 거래 패턴';
+          }
+          
+          fundamentalData.push(`${symbol}: ${analysis} (거래량: ${stats.volume24h}, 변동률: ${stats.change})`);
+        } catch (error) {
+          Logger.warn(`${symbol} 기본적 분석 데이터 수집 실패:`, error);
+        }
+      }
+
+      return fundamentalData.length > 0 
+        ? `기본적 분석:\n${fundamentalData.join('\n')}`
+        : '기본적 분석 데이터 수집 중 오류 발생';
+    } catch (error) {
+      Logger.error('기본적 분석 데이터 수집 실패:', error);
+      return '기본적 분석 데이터 수집 중 오류 발생';
+    }
+  }
+
+  /**
+   * 장기적 분석 데이터 수집
+   */
+  private async getLongTermData(): Promise<string> {
+    try {
+      const symbols = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT'];
+      const longTermData = [];
+
+      for (const symbol of symbols) {
+        try {
+          // 장기적 데이터를 위해 더 긴 기간의 차트 데이터 조회
+          const chartData = await this.binanceRepository.getChartData(symbol, '1d', 30);
+          const stats = await this.binanceRepository.get24hrStats(symbol);
+          
+          // 30일 데이터를 기반으로 장기 트렌드 분석
+          const prices = chartData.data.map((item: any) => parseFloat(item.price));
+          const firstPrice = prices[0];
+          const lastPrice = prices[prices.length - 1];
+          const longTermChange = ((lastPrice - firstPrice) / firstPrice) * 100;
+          
+          let trend = '';
+          if (longTermChange > 10) {
+            trend = '강한 상승 트렌드';
+          } else if (longTermChange > 0) {
+            trend = '약한 상승 트렌드';
+          } else if (longTermChange > -10) {
+            trend = '약한 하락 트렌드';
+          } else {
+            trend = '강한 하락 트렌드';
+          }
+          
+          longTermData.push(`${symbol}: ${trend} (30일 변화: ${longTermChange.toFixed(2)}%)`);
+        } catch (error) {
+          Logger.warn(`${symbol} 장기적 분석 데이터 수집 실패:`, error);
+        }
+      }
+
+      return longTermData.length > 0 
+        ? `장기적 분석:\n${longTermData.join('\n')}`
+        : '장기적 분석 데이터 수집 중 오류 발생';
+    } catch (error) {
+      Logger.error('장기적 분석 데이터 수집 실패:', error);
+      return '장기적 분석 데이터 수집 중 오류 발생';
+    }
+  }
+
+  /**
+   * 시장 분석 생성
+   */
+  private generateMarketAnalysis(marketData: string, timeframe: string): string {
+    const analyses = {
+      short: '단기 시장은 기술적 돌파와 뉴스 이벤트에 민감하게 반응하고 있습니다.',
+      medium: '중기 시장은 기본적 요인과 기술적 트렌드의 조합으로 움직입니다.',
+      long: '장기 시장은 생태계 성장과 기술 혁신이 핵심 동력입니다.'
+    };
+    return analyses[timeframe] || '시장 분석 데이터를 생성할 수 없습니다.';
+  }
+
+  /**
+   * 폴백 추천 생성 (오류 시)
+   */
+  private generateFallbackRecommendations(timeframe: TimeframeType): CoinRecommendationResponseDto {
+    const recommendations = this.generateSampleRecommendations();
+    
+    return {
+      timeframe,
+      timeframeDescription: this.getTimeframeDescription(timeframe),
+      recommendations: recommendations.slice(0, 3),
+      generatedAt: new Date().toISOString(),
+      modelInfo: 'Fallback - Sample Data (AI 분석 실패)',
+      marketAnalysis: 'AI 분석 중 오류가 발생하여 샘플 데이터를 제공합니다.'
+    };
+  }
+
+  /**
+   * 타임프레임 설명 가져오기
+   */
+  private getTimeframeDescription(timeframe: TimeframeType): string {
+    const descriptions = {
+      [TimeframeType.SHORT_TERM]: '단기 투자 (1-7일)',
+      [TimeframeType.MEDIUM_TERM]: '중기 투자 (1-4주)',
+      [TimeframeType.LONG_TERM]: '장기 투자 (1-12개월)'
+    };
+    return descriptions[timeframe] || '투자 기간 미정';
   }
 }
 

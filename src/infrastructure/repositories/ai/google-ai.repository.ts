@@ -158,10 +158,37 @@ export class GoogleAiRepository implements AiRepository {
     try {
       // 설정에서 모델명 가져오기
       const googleAIConfig = this.configService.getGoogleAIConfig();
-      const model = this.genAI.getGenerativeModel({ model: googleAIConfig.model });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      
+      // 사용 가능한 모델 목록 시도
+      const availableModels = [
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+        'gemini-pro',
+        'gemini-1.0-pro'
+      ];
+      
+      let lastError: any = null;
+      
+      for (const modelName of availableModels) {
+        try {
+          Logger.info(`Google AI 모델 시도: ${modelName}`);
+          const model = this.genAI.getGenerativeModel({ model: modelName });
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          const text = response.text();
+          
+          Logger.info(`Google AI 분석 성공: ${modelName}`);
+          return text;
+        } catch (error) {
+          lastError = error;
+          Logger.warn(`Google AI 모델 ${modelName} 실패: ${error.message}`);
+          continue;
+        }
+      }
+      
+      // 모든 모델이 실패한 경우
+      Logger.error(`모든 Google AI 모델 실패. 마지막 에러: ${lastError?.message}`);
+      throw new Error(`Google AI 서비스 연결 실패: ${lastError?.message}`);
     } catch (error) {
       Logger.error(`AI 분석 실패: ${error.message}`);
       throw new Error('AI 분석 중 오류가 발생했습니다.');
