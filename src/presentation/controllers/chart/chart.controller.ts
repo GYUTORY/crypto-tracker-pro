@@ -173,6 +173,12 @@ export class ChartController extends BaseService {
     description: '차트 간격'
   })
   @ApiQuery({
+    name: 'timeframe',
+    required: false,
+    enum: ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w', '1M'],
+    description: '차트 간격 (interval과 동일)'
+  })
+  @ApiQuery({
     name: 'start_time',
     required: false,
     type: String,
@@ -197,10 +203,13 @@ export class ChartController extends BaseService {
   })
   async getOHLCVData(
     @Param('symbol') symbol: string,
-    @Query() query: OHLCVQueryDto
+    @Query() query: any
   ) {
     try {
-      const { interval, start_time, end_time, limit } = query;
+      const { interval, timeframe, start_time, end_time, limit } = query;
+
+      // timeframe 또는 interval 중 하나를 사용 (timeframe 우선)
+      const chartInterval = timeframe || interval;
 
       // ISO 8601 문자열을 타임스탬프로 변환
       const startTime = start_time ? new Date(start_time).getTime() : undefined;
@@ -208,7 +217,7 @@ export class ChartController extends BaseService {
 
       const result = await this.getOHLCVDataUseCase.execute({
         symbol: symbol.toUpperCase(),
-        interval: (interval as ChartInterval) || ChartInterval.ONE_HOUR,
+        interval: (chartInterval as ChartInterval) || ChartInterval.ONE_HOUR,
         startTime,
         endTime,
         limit

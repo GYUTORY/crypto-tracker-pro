@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Post } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Query, Post, Param } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { GetBitcoinNewsUseCase } from '@/application/use-cases/news';
 import { BaseService } from '@/shared/base-response';
 import { BaseResponseDto } from '@/shared/dto/base-response.dto';
@@ -198,6 +198,68 @@ export class NewsController extends BaseService {
       return this.success(searchResult, '뉴스 검색 성공');
     } catch (error) {
       return this.fail(`뉴스 검색 실패: ${error.message}`);
+    }
+  }
+
+  /**
+   * 특정 심볼 관련 뉴스 조회
+   */
+  @Get('symbol/:symbol')
+  @ApiOperation({
+    summary: '특정 심볼 관련 뉴스 조회',
+    description: '특정 암호화폐 심볼과 관련된 뉴스를 조회합니다.'
+  })
+  @ApiParam({
+    name: 'symbol',
+    description: '암호화폐 심볼 (예: BTCUSDT)',
+    example: 'BTCUSDT'
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: '반환할 최대 개수 (기본값: 10, 최대: 50)'
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: '페이지 번호 (기본값: 1)'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '심볼 관련 뉴스 조회 성공',
+    type: BaseResponseDto<BitcoinNewsResponseDto>
+  })
+  async getNewsBySymbol(@Param('symbol') symbol: string, @Query() query: any) {
+    try {
+      const { limit = 10, page = 1 } = query;
+      
+      const result = await this.getBitcoinNewsUseCase.execute({
+        limit: parseInt(limit)
+      });
+
+      // 페이지네이션 처리
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedNews = result.news.slice(startIndex, endIndex);
+      
+      const paginatedResult = {
+        news: paginatedNews,
+        totalCount: result.totalCount,
+        lastUpdated: result.lastUpdated,
+        sources: result.sources,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(result.totalCount / limit),
+          totalItems: result.totalCount,
+          itemsPerPage: parseInt(limit)
+        }
+      };
+
+      return this.success(paginatedResult, '심볼 관련 뉴스 조회 성공');
+    } catch (error) {
+      return this.fail(`심볼 관련 뉴스 조회 실패: ${error.message}`);
     }
   }
 
