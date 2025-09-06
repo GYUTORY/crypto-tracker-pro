@@ -24,9 +24,13 @@ export class AuthService {
     // 비밀번호 해시화
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
+    // 닉네임이 없으면 자동 생성
+    const nickname = createUserDto.nickname || `user_${Date.now()}`;
+
     // 사용자 생성
     const user = await this.userRepository.create({
       ...createUserDto,
+      nickname,
       password: hashedPassword,
     });
 

@@ -23,6 +23,7 @@
  * - AuthController: 사용자 인증 API
  * - NotificationController: 알림 관리 API
  * - DashboardController: 대시보드 관리 API
+ * - HealthController: 헬스체크 API
  * 
  * 의존성:
  * - ApplicationModule: 비즈니스 로직 (Use Cases)
@@ -48,6 +49,7 @@ import { RecommendationController } from './controllers/recommendation';
 import { AuthController } from './controllers/auth';
 import { NotificationController } from './controllers/notification';
 import { DashboardController } from './controllers/dashboard';
+import { HealthController } from './controllers/health';
 import { ApplicationModule } from '../application/application.module';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { StreamingModule } from '../infrastructure/streaming/streaming.module';
@@ -111,6 +113,9 @@ import { StreamingModule } from '../infrastructure/streaming/streaming.module';
     
     // 대시보드 관리 API
     DashboardController,
+    
+    // 헬스체크 API
+    HealthController,
   ],
 })
 export class PresentationModule {} 

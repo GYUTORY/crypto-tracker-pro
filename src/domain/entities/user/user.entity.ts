@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { IsEmail, IsString, MinLength, MaxLength, IsOptional } from 'class-validator';
 
 /**
  * 사용자 엔티티
@@ -30,13 +31,14 @@ export class User {
   })
   name: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   @Index()
   @ApiProperty({
     description: '사용자 닉네임',
-    example: 'crypto_trader'
+    example: 'crypto_trader',
+    required: false
   })
-  nickname: string;
+  nickname?: string;
 
   @Column()
   @ApiProperty({
@@ -109,24 +111,36 @@ export class CreateUserDto {
     description: '사용자 이메일',
     example: 'user@example.com'
   })
+  @IsEmail({}, { message: '유효한 이메일 주소를 입력해주세요.' })
   email: string;
 
   @ApiProperty({
     description: '사용자 이름',
     example: '홍길동'
   })
+  @IsString({ message: '이름은 문자열이어야 합니다.' })
+  @MinLength(2, { message: '이름은 최소 2자 이상이어야 합니다.' })
+  @MaxLength(50, { message: '이름은 최대 50자까지 입력 가능합니다.' })
   name: string;
 
   @ApiProperty({
-    description: '사용자 닉네임',
-    example: 'crypto_trader'
+    description: '사용자 닉네임 (선택사항)',
+    example: 'crypto_trader',
+    required: false
   })
-  nickname: string;
+  @IsOptional()
+  @IsString({ message: '닉네임은 문자열이어야 합니다.' })
+  @MinLength(2, { message: '닉네임은 최소 2자 이상이어야 합니다.' })
+  @MaxLength(30, { message: '닉네임은 최대 30자까지 입력 가능합니다.' })
+  nickname?: string;
 
   @ApiProperty({
     description: '비밀번호',
     example: 'securePassword123!'
   })
+  @IsString({ message: '비밀번호는 문자열이어야 합니다.' })
+  @MinLength(6, { message: '비밀번호는 최소 6자 이상이어야 합니다.' })
+  @MaxLength(100, { message: '비밀번호는 최대 100자까지 입력 가능합니다.' })
   password: string;
 }
 
@@ -197,9 +211,10 @@ export class UserResponseDto {
 
   @ApiProperty({
     description: '사용자 닉네임',
-    example: 'crypto_trader'
+    example: 'crypto_trader',
+    required: false
   })
-  nickname: string;
+  nickname?: string;
 
   @ApiProperty({
     description: '사용자 프로필 이미지 URL',

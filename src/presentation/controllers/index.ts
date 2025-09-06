@@ -46,3 +46,6 @@ export * from './notification';
 
 // 대시보드 관련 컨트롤러
 export * from './dashboard';
+
+// 헬스체크 관련 컨트롤러
+export * from './health';
