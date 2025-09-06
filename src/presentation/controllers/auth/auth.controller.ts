@@ -31,13 +31,13 @@ import {
  * 사용자 회원가입, 로그인, 인증 관련 API를 제공합니다.
  */
 @ApiTags('Authentication')
-@Controller('auth')
+@Controller()
 export class AuthController extends BaseService {
   constructor(private readonly authService: AuthService) {
     super();
   }
 
-  @Post('register')
+  @Post('auth/register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: '사용자 회원가입',
@@ -79,7 +79,7 @@ export class AuthController extends BaseService {
     }
   }
 
-  @Post('login')
+  @Post('auth/login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: '사용자 로그인',
@@ -117,7 +117,7 @@ export class AuthController extends BaseService {
     }
   }
 
-  @Get('profile')
+  @Get('auth/profile')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '사용자 프로필 조회',
@@ -149,7 +149,7 @@ export class AuthController extends BaseService {
     }
   }
 
-  @Put('profile')
+  @Put('auth/profile')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '사용자 프로필 업데이트',
@@ -183,7 +183,7 @@ export class AuthController extends BaseService {
     }
   }
 
-  @Post('change-password')
+  @Post('auth/change-password')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '비밀번호 변경',
@@ -231,7 +231,7 @@ export class AuthController extends BaseService {
     }
   }
 
-  @Post('verify-email')
+  @Post('auth/verify-email')
   @ApiOperation({
     summary: '이메일 인증',
     description: '사용자의 이메일 인증을 완료합니다.'
@@ -265,7 +265,7 @@ export class AuthController extends BaseService {
     }
   }
 
-  @Post('refresh-token')
+  @Post('auth/refresh-token')
   @ApiBearerAuth()
   @ApiOperation({
     summary: '토큰 갱신',

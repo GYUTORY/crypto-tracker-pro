@@ -47,7 +47,7 @@ export class TradingSymbolsResponseDto {
  * 카테고리별로 분류하여 제공합니다.
  */
 @ApiTags('symbols')
-@Controller('symbols')
+@Controller()
 export class SymbolsController {
   constructor(
     private readonly getTradingSymbolsUseCase: GetTradingSymbolsUseCase
@@ -56,7 +56,7 @@ export class SymbolsController {
   /**
    * 거래 가능한 코인 목록 조회
    */
-  @Get()
+  @Get('symbols')
   @ApiOperation({
     summary: '거래 가능한 코인 목록 조회',
     description: '바이낸스에서 거래 가능한 모든 코인 목록을 조회하고 카테고리별로 분류하여 제공합니다.'
@@ -113,7 +113,7 @@ export class SymbolsController {
   /**
    * 인기 코인 목록 조회
    */
-  @Get('popular')
+  @Get('symbols/popular')
   @ApiOperation({
     summary: '인기 코인 목록 조회',
     description: '거래량 기준 인기 코인 목록을 조회합니다.'
@@ -170,7 +170,7 @@ export class SymbolsController {
   /**
    * USDT 페어 코인 목록 조회
    */
-  @Get('usdt')
+  @Get('symbols/usdt')
   @ApiOperation({
     summary: 'USDT 페어 코인 목록 조회',
     description: 'USDT로 거래되는 코인 목록을 조회합니다.'

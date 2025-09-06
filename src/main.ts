@@ -170,16 +170,16 @@ async function bootstrap() {
         ## 사용 예시
         \`\`\`bash
         # 실시간 가격 조회
-        GET /price/BTCUSDT
+        GET /api/price/BTCUSDT
         
         # AI 기술적 분석
-        POST /ai/technical-analysis
+        POST /api/ai/technical-analysis
         {
           "symbol": "BTCUSDT"
         }
         
         # 가격 예측
-        GET /prediction/BTCUSDT?timeframes=1h,24h,1w
+        GET /api/prediction/BTCUSDT?timeframes=1h,24h,1w
         \`\`\`
       `)
       .setVersion('1.0.0')
@@ -231,7 +231,11 @@ async function bootstrap() {
     Logger.warn('프로덕션 환경에서는 Swagger 문서가 비활성화됩니다.');
   }
 
-  // 글로벌 경로 프리픽스 (현재 미사용)
+  // 글로벌 경로 프리픽스 설정 (헬스체크, symbols, auth는 제외)
+  app.setGlobalPrefix('api', {
+    exclude: ['health', 'health/(.*)', 'symbols', 'symbols/(.*)', 'auth', 'auth/(.*)']
+  });
+  
   const port = process.env.PORT || 3000;
   const host = process.env.HOST || '0.0.0.0'; // 모든 네트워크 인터페이스에서 접근 가능
   
